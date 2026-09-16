@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'verify_email_screen.dart';
 
 class CreatePasswordScreen extends StatefulWidget {
-  const CreatePasswordScreen({super.key});
+  final String email;
+  final String name;
+
+  const CreatePasswordScreen({super.key, required this.email, required this.name});
 
   @override
   State<CreatePasswordScreen> createState() => _CreatePasswordScreenState();
@@ -12,13 +16,43 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
   final _confirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  String? _errorMessage;
+
+  void _handleContinue() {
+    final password = _passwordController.text;
+    final confirm = _confirmController.text;
+
+    if (password.isEmpty || confirm.isEmpty) {
+      setState(() => _errorMessage = 'Please fill in both fields.');
+      return;
+    }
+
+    if (password.length < 8) {
+      setState(() => _errorMessage = 'Password must be at least 8 characters.');
+      return;
+    }
+
+    if (password != confirm) {
+      setState(() => _errorMessage = 'Passwords do not match. Please try again.');
+      return;
+    }
+
+    setState(() => _errorMessage = null);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VerifyEmailScreen(email: widget.email, name: widget.name),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F1F0),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,6 +101,13 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
                   ),
                 ),
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
+                ),
+              ],
               const SizedBox(height: 24),
               const Text('Password strength', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
@@ -77,9 +118,7 @@ class _CreatePasswordScreenState extends State<CreatePasswordScreen> {
               const SizedBox(height: 40),
               Center(
                 child: TextButton(
-                  onPressed: () {
-                    // Will navigate to the Verify Email screen next.
-                  },
+                  onPressed: _handleContinue,
                   child: const Text(
                     'Continue',
                     style: TextStyle(

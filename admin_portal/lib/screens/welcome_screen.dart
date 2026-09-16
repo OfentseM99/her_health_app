@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'create_password_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+  final String name;
+  final String email;
+
+  const WelcomeScreen({super.key, required this.name, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -14,15 +17,11 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.spa,
-                size: 80,
-                color: Colors.pink.shade200,
-              ),
+              Icon(Icons.spa, size: 80, color: Colors.pink.shade200),
               const SizedBox(height: 32),
-              const Text(
-                'Welcome Dr. Mbokota!',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              Text(
+                'Welcome $name!',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -38,16 +37,14 @@ class WelcomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreatePasswordScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => CreatePasswordScreen(email: email, name: name),
+                    ),
                   );
                 },
                 child: const Text(
                   'Continue',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: Colors.green, fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
