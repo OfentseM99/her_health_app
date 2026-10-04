@@ -18,6 +18,8 @@ class PatientProfileRequest(BaseModel):
     last_name: str
     phone: str | None = None
     date_of_birth: date | None = None
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
 
 
 @router.post("/profile")
@@ -45,15 +47,17 @@ def create_patient_profile(
         cursor.execute(
             """
             INSERT INTO patients
-            (user_id, first_name, last_name, phone, date_of_birth)
-            VALUES (%s, %s, %s, %s, %s)
+            (user_id, first_name, last_name, phone, date_of_birth, emergency_contact_name, emergency_contact_phone)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 current_user["user_id"],
                 profile.first_name,
                 profile.last_name,
                 profile.phone,
-                profile.date_of_birth
+                profile.date_of_birth,
+                profile.emergency_contact_name,
+                profile.emergency_contact_phone
             )
         )
 
@@ -84,6 +88,8 @@ def get_patient_profile(
                 last_name,
                 phone,
                 date_of_birth,
+                emergency_contact_name,
+                emergency_contact_phone,
                 created_at,
                 updated_at
             FROM patients
@@ -139,7 +145,9 @@ def update_patient_profile(
                 first_name = %s,
                 last_name = %s,
                 phone = %s,
-                date_of_birth = %s
+                date_of_birth = %s,
+                emergency_contact_name = %s,
+                emergency_contact_phone = %s
             WHERE user_id = %s
             """,
             (
@@ -147,6 +155,8 @@ def update_patient_profile(
                 profile.last_name,
                 profile.phone,
                 profile.date_of_birth,
+                profile.emergency_contact_name,
+                profile.emergency_contact_phone,
                 current_user["user_id"]
             )
         )

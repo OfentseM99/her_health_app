@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import 'appointments_screen.dart';
+import 'messages_screen.dart';
+import 'health_profile_screen.dart';
+import 'settings_screen.dart';
+import 'reminders_screen.dart';
+import 'articles_screen.dart';
 
 
 class ChatbotScreen extends StatefulWidget {
@@ -20,73 +27,112 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController messageController =
       TextEditingController();
 
+  final ScrollController scrollController = ScrollController();
 
+  static const Map<String, String> _welcomeMessage = {
+    "sender": "ai",
+    "message":
+        "Hi 🌸 I am Her Health Assistant.\n\n"
+        "I am here to support your wellness journey. "
+        "How can I help you today?"
+  };
 
-  List<Map<String,String>> messages = [
+  List<Map<String, String>> messages = [_welcomeMessage];
 
+  bool _isLoadingHistory = true;
+  bool _isSending = false;
 
-    {
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
 
-      "sender":"ai",
+  /// Loads whatever conversation the patient already has saved. If they
+  /// have no history yet (a brand-new chat), the hardcoded welcome
+  /// message stays as the only thing shown -- no error, no empty screen.
+  Future<void> _loadHistory() async {
+    try {
+      final history = await AuthService.getChatHistory();
 
-      "message":
-      "Hi 🌸 I am Her Health Assistant.\n\n"
-      "I am here to support your wellness journey. "
-      "How can I help you today?"
+      if (!mounted) return;
 
+      if (history.isNotEmpty) {
+        setState(() {
+          messages = history
+              .map((m) => {
+                    "sender": (m["sender"] as String?) ?? "ai",
+                    "message": (m["message"] as String?) ?? "",
+                  })
+              .toList();
+        });
+      }
+    } catch (e) {
+      // A failed history load isn't worth blocking the screen over --
+      // the welcome message is still there, and the person can still
+      // chat. Fail quietly here.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingHistory = false;
+        });
+      }
+      _scrollToBottom();
     }
+  }
 
-
-  ];
-
-
-
-
-
-  void sendMessage(){
-
-
-    if(messageController.text.trim().isEmpty){
-
-      return;
-
-    }
-
-
-
-    setState((){
-
-
-      messages.add({
-
-        "sender":"user",
-
-        "message":
-        messageController.text.trim(),
-
-      });
-
-
-
-      messages.add({
-
-        "sender":"ai",
-
-        "message":
-        "Thank you for sharing that with me 🌿.\n\n"
-        "I will guide you with health information "
-        "and support."
-
-      });
-
-
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!scrollController.hasClients) return;
+      scrollController.animateTo(
+        scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
     });
+  }
 
+  Future<void> sendMessage() async {
+    final text = messageController.text.trim();
 
+    if (text.isEmpty || _isSending) {
+      return;
+    }
 
     messageController.clear();
 
+    setState(() {
+      _isSending = true;
+    });
 
+    try {
+      final saved = await AuthService.sendChatMessage(text);
+
+      if (!mounted) return;
+
+      setState(() {
+        for (final m in saved) {
+          messages.add({
+            "sender": (m["sender"] as String?) ?? "ai",
+            "message": (m["message"] as String?) ?? "",
+          });
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red.shade400),
+      );
+      // Give the message back so it isn't lost on failure.
+      messageController.text = text;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSending = false;
+        });
+      }
+      _scrollToBottom();
+    }
   }
 
 
@@ -228,6 +274,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
 
                 child:ListView.builder(
+
+
+
+                  controller: scrollController,
 
 
 
@@ -541,7 +591,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
 
                         onTap:
-                        sendMessage,
+                        _isSending ? null : sendMessage,
 
 
 
@@ -578,8 +628,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
 
 
-                          child:
-                          const Icon(
+                          child: _isSending
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(
 
 
 
@@ -784,54 +841,126 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
 
 
-          drawerItem(
-            Icons.calendar_month,
-            "Appointments",
+          ListTile(
+            leading: const Icon(
+              Icons.calendar_month,
+              color: Color(0xFF959B7D),
+            ),
+            title: const Text("Appointments"),
+            onTap: () {
+              Navigator.pop(context); // close the drawer first
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AppointmentsScreen(),
+                ),
+              );
+            },
           ),
 
 
 
 
 
-          drawerItem(
-            Icons.medical_services,
-            "Contact Doctor",
+          ListTile(
+            leading: const Icon(
+              Icons.medical_services,
+              color: Color(0xFF959B7D),
+            ),
+            title: const Text("Contact Doctor"),
+            onTap: () {
+              Navigator.pop(context); // close the drawer first
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MessagesScreen(),
+                ),
+              );
+            },
           ),
 
 
 
 
 
-          drawerItem(
-            Icons.favorite,
-            "Health Profile",
+          ListTile(
+            leading: const Icon(
+              Icons.favorite,
+              color: Color(0xFF959B7D),
+            ),
+            title: const Text("Health Profile"),
+            onTap: () {
+              Navigator.pop(context); // close the drawer first
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const HealthProfileScreen(),
+                ),
+              );
+            },
           ),
 
 
 
 
 
-          drawerItem(
-            Icons.notifications,
-            "Reminders",
+          ListTile(
+            leading: const Icon(
+              Icons.notifications,
+              color: Color(0xFF959B7D),
+            ),
+            title: const Text("Reminders"),
+            onTap: () {
+              Navigator.pop(context); // close the drawer first
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RemindersScreen(),
+                ),
+              );
+            },
           ),
 
 
 
 
 
-          drawerItem(
-            Icons.article,
-            "Health Articles",
+          ListTile(
+            leading: const Icon(
+              Icons.article,
+              color: Color(0xFF959B7D),
+            ),
+            title: const Text("Health Articles"),
+            onTap: () {
+              Navigator.pop(context); // close the drawer first
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ArticlesScreen(),
+                ),
+              );
+            },
           ),
 
 
 
 
 
-          drawerItem(
-            Icons.settings,
-            "Settings",
+          ListTile(
+            leading: const Icon(
+              Icons.settings,
+              color: Color(0xFF959B7D),
+            ),
+            title: const Text("Settings"),
+            onTap: () {
+              Navigator.pop(context); // close the drawer first
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
           ),
 
 

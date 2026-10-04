@@ -45,6 +45,29 @@ def request_appointment(
                 detail="Patient profile not found."
             )
 
+        if appointment.requested_date < date.today():
+            raise HTTPException(
+                status_code=400,
+                detail="Appointment date cannot be in the past."
+            )
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM appointments
+            WHERE requested_date = %s
+              AND requested_time = %s
+              AND status IN ('pending', 'approved')
+            """,
+            (appointment.requested_date, appointment.requested_time)
+        )
+
+        if cursor.fetchone():
+            raise HTTPException(
+                status_code=409,
+                detail="That time slot is already booked. Please choose a different time."
+            )
+
         cursor.execute(
             """
             INSERT INTO appointments

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'welcome_screen.dart';
+import '../services/api_service.dart';
+import 'dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,13 +14,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 2500), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-        );
-      }
+    Future.delayed(const Duration(milliseconds: 2500), () async {
+      if (!mounted) return;
+
+      final token = await ApiService.getToken();
+      final roleId = await ApiService.getRoleId();
+      final isLoggedIn = token != null &&
+          roleId != null &&
+          ApiService.staffRoleIds.contains(roleId);
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              isLoggedIn ? const DashboardScreen() : const WelcomeScreen(),
+        ),
+      );
     });
   }
 

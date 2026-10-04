@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'chatbot_screen.dart';
+import '../services/auth_service.dart';
 
 class JourneyQuestionsScreen extends StatefulWidget {
   final String journey;
@@ -16,6 +17,114 @@ class JourneyQuestionsScreen extends StatefulWidget {
 
 class _JourneyQuestionsScreenState
     extends State<JourneyQuestionsScreen> {
+
+  // --------------------------------------------------
+  // Backend wiring: maps the display string in widget.journey to the
+  // journey_type slug the backend's CHECK constraint and ANSWER_MODELS
+  // dict expect.
+  // --------------------------------------------------
+
+  static const Map<String, String> _journeyTypeSlugs = {
+    "🤰 Pregnancy Care": "pregnancy_care",
+    "🌸 Menstrual Health": "menstrual_health",
+    "👶 Postpartum Recovery": "postpartum_recovery",
+    "💚 General Women's Health": "general_health",
+    "✨ Cosmetic Gynecology": "cosmetic_gynecology",
+  };
+
+  bool _isSaving = false;
+
+  /// Reads whichever controllers are actually shown for widget.journey and
+  /// builds the JSON the backend expects for that journey type. Field
+  /// names here must match models/health_journey.py exactly.
+  Map<String, dynamic> _buildAnswers() {
+    switch (widget.journey) {
+      case "🤰 Pregnancy Care":
+        return {
+          'weeks_pregnant': pregnancyWeeksController.text,
+          'first_pregnancy': firstPregnancyController.text,
+          'had_antenatal_visit': antenatalController.text,
+          'complications': complicationsController.text,
+          'taking_vitamins': vitaminsController.text,
+          'due_date': dueDateController.text,
+        };
+      case "🌸 Menstrual Health":
+        return {
+          'last_period': lastPeriodController.text,
+          'cycle_length': cycleLengthController.text,
+          'period_length': periodLengthController.text,
+          'cramps': crampsController.text,
+          'regular_periods': regularController.text,
+          'birth_control': birthControlController.text,
+        };
+      case "👶 Postpartum Recovery":
+        return {
+          'weeks_postpartum': postpartumWeeksController.text,
+          'breastfeeding': breastfeedingController.text,
+          'sleep_quality': sleepController.text,
+          'mood': moodController.text,
+          'postpartum_checkup': postpartumCheckController.text,
+          'concerns': postpartumConcernController.text,
+        };
+      case "💚 General Women's Health":
+        return {
+          'height': heightController.text,
+          'weight': weightController.text,
+          'exercise': exerciseController.text,
+          'water_intake': waterController.text,
+          'sleep_hours': sleepHoursController.text,
+          'health_concerns': healthConcernController.text,
+        };
+      case "✨ Cosmetic Gynecology":
+        return {
+          'improvement_goal': cosmeticGoalController.text,
+          'previous_procedures': previousProcedureController.text,
+          'consulted_specialist': specialistController.text,
+          'expected_outcome': expectedOutcomeController.text,
+        };
+      default:
+        return {};
+    }
+  }
+
+  Future<void> _handleContinue() async {
+    final journeyType = _journeyTypeSlugs[widget.journey];
+    if (journeyType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unrecognised journey type.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await AuthService.saveHealthJourney(
+        journeyType: journeyType,
+        answers: _buildAnswers(),
+      );
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red.shade400),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
 
   // --------------------------------------------------
   // Pregnancy Care
@@ -174,6 +283,54 @@ class _JourneyQuestionsScreenState
 
   String? selectedPainLevel;
   String? selectedMood;
+
+  // ===========================
+  // Missing controllers (added to fix compile errors --
+  // these were referenced in buildQuestion() calls below
+  // but never declared)
+  // ===========================
+
+  final TextEditingController pregnancyWeeksController =
+      TextEditingController();
+
+  final TextEditingController firstPregnancyController =
+      TextEditingController();
+
+  final TextEditingController antenatalController =
+      TextEditingController();
+
+  final TextEditingController complicationsController =
+      TextEditingController();
+
+  final TextEditingController vitaminsController =
+      TextEditingController();
+
+  final TextEditingController periodLengthController =
+      TextEditingController();
+
+  final TextEditingController crampsController =
+      TextEditingController();
+
+  final TextEditingController regularController =
+      TextEditingController();
+
+  final TextEditingController birthControlController =
+      TextEditingController();
+
+  final TextEditingController postpartumWeeksController =
+      TextEditingController();
+
+  final TextEditingController sleepController =
+      TextEditingController();
+
+  final TextEditingController moodController =
+      TextEditingController();
+
+  final TextEditingController postpartumCheckController =
+      TextEditingController();
+
+  final TextEditingController postpartumConcernController =
+      TextEditingController();
 
   // --------------------------------------------------
   // Helper Methods
@@ -608,22 +765,24 @@ class _JourneyQuestionsScreenState
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ChatbotScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Continue to Her Health AI 🌸",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        onPressed: _isSaving ? null : _handleContinue,
+                        child: _isSaving
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                "Continue to Her Health AI 🌸",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:her_health_app/screens/journey_questions_screen.dart';
+import '../services/auth_service.dart';
 
 
 class HealthSetupScreen extends StatefulWidget {
@@ -47,9 +48,12 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
 
                   const SizedBox(height: 20),
 
-                  const Text(
-                    "Welcome Name 🌸",
-                    style: TextStyle(
+                  Text(
+                    (AuthService.firstName ?? '').isEmpty
+                        ? "Welcome 🌸"
+                        : "Welcome ${AuthService.firstName} 🌸",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF959B7D),
@@ -152,7 +156,14 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                                 return;
                               }
 
-                           
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => JourneyQuestionsScreen(
+                                    journey: selectedJourney!,
+                                  ),
+                                ),
+                              );
                             },
                             child: const Text(
                               "Continue 🌸",

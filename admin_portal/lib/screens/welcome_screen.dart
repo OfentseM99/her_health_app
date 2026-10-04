@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'create_password_screen.dart';
+import 'login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -48,6 +49,19 @@ class WelcomeScreen extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  );
+                },
+                child: const Text(
+                  'Already have an account? Log in',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
             ],

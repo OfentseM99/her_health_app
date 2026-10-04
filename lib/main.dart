@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'screens/welcome_screen.dart';
+import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -78,7 +79,7 @@ class HerHealthApp extends StatelessWidget {
 
 
       // First screen
-      home: const WelcomeScreen(),
+      home: const SplashScreen(),
 
 
 
