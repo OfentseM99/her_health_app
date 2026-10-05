@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:her_health_app/screens/journey_questions_screen.dart';
 
-
 class HealthSetupScreen extends StatefulWidget {
   const HealthSetupScreen({super.key});
 
@@ -30,11 +29,9 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
             'assets/images/backgrounds/background.jpeg',
             fit: BoxFit.cover,
           ),
-
           Container(
-            color: Colors.white.withOpacity(0.25),
+            color: Colors.white.withValues(alpha: 0.25),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(25),
@@ -44,9 +41,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                     'assets/images/logo/logo.png',
                     height: 110,
                   ),
-
                   const SizedBox(height: 20),
-
                   const Text(
                     "Welcome Name 🌸",
                     style: TextStyle(
@@ -55,9 +50,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                       color: Color(0xFF959B7D),
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   const Text(
                     "Let's personalise your Her Health journey",
                     textAlign: TextAlign.center,
@@ -66,13 +59,11 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                       color: Color(0xFF959B7D),
                     ),
                   ),
-
                   const SizedBox(height: 35),
-
                   Container(
                     padding: const EdgeInsets.all(25),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.92),
+                      color: Colors.white.withValues(alpha: 0.92),
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: const [
                         BoxShadow(
@@ -89,9 +80,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                           size: 60,
                           color: Color(0xFFE89CB0),
                         ),
-
                         const SizedBox(height: 15),
-
                         const Text(
                           "Which best describes your current healthcare journey?",
                           textAlign: TextAlign.center,
@@ -101,13 +90,13 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                             color: Color(0xFF959B7D),
                           ),
                         ),
-
                         const SizedBox(height: 25),
-
                         ...journeys.map(
                           (journey) => Card(
                             elevation: 2,
-                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            margin: const EdgeInsets.symmetric(
+                              vertical: 6,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
@@ -117,7 +106,9 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                               activeColor: const Color(0xFFE89CB0),
                               title: Text(
                                 journey,
-                                style: const TextStyle(fontSize: 16),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                ),
                               ),
                               onChanged: (value) {
                                 setState(() {
@@ -127,9 +118,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 30),
-
                         SizedBox(
                           width: double.infinity,
                           height: 55,
@@ -141,6 +130,7 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                               ),
                             ),
                             onPressed: () {
+                              // Make sure the user selected a journey.
                               if (selectedJourney == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -149,10 +139,20 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
                                     ),
                                   ),
                                 );
+
                                 return;
                               }
 
-                           
+                              // Open the questions screen
+                              // and send the selected journey with it.
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => JourneyQuestionsScreen(
+                                    journey: selectedJourney!,
+                                  ),
+                                ),
+                              );
                             },
                             child: const Text(
                               "Continue 🌸",
