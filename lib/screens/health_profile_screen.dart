@@ -1,3 +1,4 @@
+import 'health_tracking_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../theme/design_a.dart';
@@ -22,7 +23,15 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
   final medicationsController = TextEditingController();
 
   static const List<String> bloodTypes = [
-    'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', "I don't know",
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-',
+    'O+',
+    'O-',
+    "I don't know",
   ];
 
   static const Map<String, String> journeyLabels = {
@@ -211,7 +220,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     );
   }
 
-  Widget _field(String label, TextEditingController controller, {String? hint}) {
+  Widget _field(String label, TextEditingController controller,
+      {String? hint}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
@@ -272,7 +282,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
           Text(
             _loadError ?? "No health profile found for this account.",
             textAlign: TextAlign.center,
-            style: DA.body(16, color: _loadError != null ? DA.rejectedInk : DA.muted),
+            style: DA.body(16,
+                color: _loadError != null ? DA.rejectedInk : DA.muted),
           ),
         ],
       );
@@ -292,7 +303,6 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _header(),
-
               _sectionTitle('Personal'),
               _field('First name', firstNameController),
               _field('Last name', lastNameController),
@@ -307,24 +317,24 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                       onTap: _pickDob,
                       child: InputDecorator(
                         decoration: DA.input(
-                          suffix: const Icon(Icons.calendar_today_outlined, color: DA.sage),
+                          suffix: const Icon(Icons.calendar_today_outlined,
+                              color: DA.sage),
                         ),
                         child: Text(
                           dobText,
-                          style: DA.body(16, color: _dob == null ? DA.quiet : DA.ink),
+                          style: DA.body(16,
+                              color: _dob == null ? DA.quiet : DA.ink),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-
               _sectionTitle('Contact'),
               _field('Street address', addressController),
               _field('City', cityController),
               _field('Emergency contact name', emergencyNameController),
               _field('Emergency contact number', emergencyPhoneController),
-
               _sectionTitle('Health'),
               Padding(
                 padding: const EdgeInsets.only(bottom: 18),
@@ -373,6 +383,63 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   ],
                 ),
               ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 18),
+                padding: const EdgeInsets.all(18),
+                decoration: DA.card(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: DA.blush,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.monitor_heart_outlined,
+                            color: DA.rose,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Health tracking',
+                                style: DA.heading(18),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                'Track symptoms, mood, pain and private journal notes.',
+                                style: DA.body(13, color: DA.quiet),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      style: DA.outline(),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HealthTrackingScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: const Text('Open health tracking'),
+                    ),
+                  ],
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Column(
@@ -385,10 +452,12 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                       style: DA.body(16),
                       dropdownColor: DA.surface,
                       borderRadius: BorderRadius.circular(16),
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: DA.sage),
+                      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                          color: DA.sage),
                       decoration: DA.input(),
                       items: bloodTypes
-                          .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                          .map(
+                              (t) => DropdownMenuItem(value: t, child: Text(t)))
                           .toList(),
                       onChanged: (value) {
                         setState(() {
@@ -399,15 +468,18 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
                   ],
                 ),
               ),
-              _field('Allergies', allergiesController, hint: 'Separate with commas'),
-              _field('Medical conditions', conditionsController, hint: 'Separate with commas'),
-              _field('Current medication', medicationsController, hint: 'Separate with commas'),
-
+              _field('Allergies', allergiesController,
+                  hint: 'Separate with commas'),
+              _field('Medical conditions', conditionsController,
+                  hint: 'Separate with commas'),
+              _field('Current medication', medicationsController,
+                  hint: 'Separate with commas'),
               const SizedBox(height: 20),
               ElevatedButton(
                 style: DA.primary(),
                 onPressed: _isSaving ? null : _save,
-                child: _isSaving ? DA.buttonSpinner : const Text('Save changes'),
+                child:
+                    _isSaving ? DA.buttonSpinner : const Text('Save changes'),
               ),
             ],
           ),

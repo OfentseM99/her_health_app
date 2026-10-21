@@ -139,7 +139,8 @@ class AuthService {
       final dd = dateOfBirth.day.toString().padLeft(2, '0');
       body['date_of_birth'] = '${dateOfBirth.year}-$mm-$dd';
     }
-    if (emergencyContactName != null && emergencyContactName.trim().isNotEmpty) {
+    if (emergencyContactName != null &&
+        emergencyContactName.trim().isNotEmpty) {
       body['emergency_contact_name'] = emergencyContactName.trim();
     }
     if (emergencyContactPhone != null &&
@@ -427,6 +428,24 @@ class AuthService {
     }
   }
 
+  static Future<List<dynamic>> getHealthTrackingEntries() async {
+    final data = await _authorizedGetRaw('/health-journey/entries');
+    return (data is List) ? data : [];
+  }
+
+  static Future<void> saveHealthTrackingEntry({
+    required String entryDate,
+    String? painLevel,
+    String? mood,
+    required Map<String, dynamic> data,
+  }) async {
+    await _authorizedPostRaw('/health-journey/entries', {
+      'entry_date': entryDate,
+      'pain_level': painLevel,
+      'mood': mood,
+      'data': data,
+    });
+  }
   // ===========================================================
   // Forgot password
   // ===========================================================
