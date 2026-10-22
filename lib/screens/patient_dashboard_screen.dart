@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'billing_screen.dart';
 import 'period_tracker_screen.dart';
 import 'chatbot_screen.dart';
 
@@ -19,28 +19,25 @@ class PatientDashboardScreen extends StatefulWidget {
 }
 
 class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
-  int selectedIndex = 0;
+  // Her Health colours
+  static const Color rose = Color(0xFFB04F6C);
+  static const Color lightRose = Color(0xFFD9879E);
+  static const Color blush = Color(0xFFF6DCE2);
+  static const Color forestGreen = Color(0xFF2F3A2A);
+  static const Color warmText = Color(0xFF5E5652);
+  static const Color cardBorder = Color(0xFFEADFDB);
+  static const Color pageBackground = Color(0xFFFAF6F3);
 
+  int selectedIndex = 0;
   bool isLoading = true;
 
-  // ============================================================
-  // SAVED PATIENT INFORMATION
-  // ============================================================
-
   String savedJourney = "Women's Health";
-
-  String weeksPregnant = "";
-  String dueDate = "";
-
-  String lastPeriod = "";
-  String cycleLength = "";
-  String periodLength = "";
-
-  String postpartumWeeks = "";
-
-  // ============================================================
-  // LOAD PATIENT INFORMATION
-  // ============================================================
+  String weeksPregnant = '';
+  String dueDate = '';
+  String lastPeriod = '';
+  String cycleLength = '';
+  String periodLength = '';
+  String postpartumWeeks = '';
 
   @override
   void initState() {
@@ -58,199 +55,167 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           widget.journey ??
           "Women's Health";
 
-      weeksPregnant = prefs.getString('weeksPregnant') ?? "";
-      dueDate = prefs.getString('dueDate') ?? "";
-
-      lastPeriod = prefs.getString('lastPeriod') ?? "";
-      cycleLength = prefs.getString('cycleLength') ?? "";
-      periodLength = prefs.getString('periodLength') ?? "";
-
-      postpartumWeeks = prefs.getString('postpartumWeeks') ?? "";
+      weeksPregnant = prefs.getString('weeksPregnant') ?? '';
+      dueDate = prefs.getString('dueDate') ?? '';
+      lastPeriod = prefs.getString('lastPeriod') ?? '';
+      cycleLength = prefs.getString('cycleLength') ?? '';
+      periodLength = prefs.getString('periodLength') ?? '';
+      postpartumWeeks = prefs.getString('postpartumWeeks') ?? '';
 
       isLoading = false;
     });
   }
 
-  // ============================================================
-  // DISPLAY NAME
-  // ============================================================
-
   String get displayName {
-    if (widget.patientName != null && widget.patientName!.trim().isNotEmpty) {
-      return widget.patientName!;
+    final name = widget.patientName?.trim();
+
+    if (name != null && name.isNotEmpty) {
+      return name;
     }
 
-    return "Name";
+    return 'there';
   }
-
-  // ============================================================
-  // DISPLAY JOURNEY
-  // ============================================================
 
   String get displayJourney {
-    if (savedJourney.trim().isNotEmpty) {
-      return savedJourney;
+    final journey = savedJourney.trim();
+
+    if (journey.isNotEmpty) {
+      return journey;
     }
 
-    if (widget.journey != null && widget.journey!.trim().isNotEmpty) {
-      return widget.journey!;
-    }
-
-    return "Women's Health";
+    return widget.journey ?? "Women's Health";
   }
 
-  // ============================================================
-  // BUILD
-  // ============================================================
+  // Accepts the journey names with or without leading emojis.
+  String get journeyKey {
+    final journey = displayJourney.toLowerCase();
+
+    if (journey.contains('pregnancy')) return 'pregnancy';
+    if (journey.contains('menstrual')) return 'menstrual';
+    if (journey.contains('postpartum')) return 'postpartum';
+    if (journey.contains('cosmetic')) return 'cosmetic';
+
+    if (journey.contains('general') ||
+        journey.contains("women's health") ||
+        journey.contains('womens health')) {
+      return 'general';
+    }
+
+    return 'general';
+  }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFFFDF8FA),
+        backgroundColor: pageBackground,
         body: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFFE89CB0),
-          ),
+          child: CircularProgressIndicator(color: rose),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF8FA),
+      backgroundColor: pageBackground,
       body: _buildCurrentPage(),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
-  // ============================================================
-  // CURRENT PAGE
-  // ============================================================
-
   Widget _buildCurrentPage() {
     switch (selectedIndex) {
       case 1:
         return _buildCalendarPage();
-
       case 2:
         return _buildAIPage();
-
       case 3:
         return _buildDoctorPage();
-
       case 4:
         return _buildProfilePage();
-
       default:
         return _buildHomePage();
     }
   }
 
-  // ============================================================
   // HOME DASHBOARD
-  // ============================================================
 
   Widget _buildHomePage() {
     return SafeArea(
       child: Stack(
         children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/backgrounds/background.jpeg',
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  const ColoredBox(color: pageBackground),
+            ),
+          ),
+          Positioned.fill(
+            child: ColoredBox(
+              color: pageBackground.withValues(alpha: 0.88),
+            ),
+          ),
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 90),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 100),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildTopHeader(),
-
-                const SizedBox(height: 25),
-
+                const SizedBox(height: 28),
                 Text(
-                  "Good morning, $displayName 🌸",
+                  'Good day, $displayName',
                   style: const TextStyle(
                     fontSize: 27,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
+                    color: forestGreen,
                   ),
                 ),
-
-                const SizedBox(height: 6),
-
+                const SizedBox(height: 8),
                 const Text(
-                  "How can Her Health help you today?",
+                  'Your health matters. Let’s take it one day at a time.',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black54,
+                    fontSize: 15,
+                    color: warmText,
+                    height: 1.5,
                   ),
                 ),
-
-                const SizedBox(height: 22),
-
-                // ====================================================
-                // PERSONAL HEALTH JOURNEY
-                // ====================================================
-
+                const SizedBox(height: 24),
                 _buildJourneyHealthCard(),
-
-                const SizedBox(height: 20),
-
-                // ====================================================
-                // APPOINTMENT
-                // ====================================================
-
+                const SizedBox(height: 18),
                 _buildAppointmentCard(),
-
-                const SizedBox(height: 20),
-
-                // ====================================================
-                // CYCLE CARD
-                // ====================================================
-
-                if (displayJourney == "🌸 Menstrual Health") _buildCycleCard(),
-
-                if (displayJourney == "🌸 Menstrual Health")
-                  const SizedBox(height: 25),
-
-                // ====================================================
-                // QUICK ACTIONS
-                // ====================================================
-
-                const Text(
-                  "Quick Actions",
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                _buildQuickActions(),
-
+                if (journeyKey == 'menstrual') ...[
+                  const SizedBox(height: 18),
+                  _buildCycleCard(),
+                ],
                 const SizedBox(height: 25),
-
                 const Text(
-                  "Your Healthcare Journey",
+                  'Quick Actions',
                   style: TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
+                    color: forestGreen,
                   ),
                 ),
-
-                const SizedBox(height: 12),
-
+                const SizedBox(height: 14),
+                _buildQuickActions(),
+                const SizedBox(height: 25),
+                const Text(
+                  'Your Healthcare Journey',
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                    color: forestGreen,
+                  ),
+                ),
+                const SizedBox(height: 14),
                 _buildJourneyCard(),
               ],
             ),
           ),
-
-          // ============================================================
-          // FLOATING AI BUTTON
-          // ============================================================
-
           Positioned(
             right: 18,
-            bottom: 20,
+            bottom: 18,
             child: _buildFloatingAIButton(),
           ),
         ],
@@ -258,151 +223,60 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
-  // FLOATING AI BUTTON
-  // ============================================================
-
-  Widget _buildFloatingAIButton() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          _openAI();
-        },
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 15,
-            vertical: 11,
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE89CB0),
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.smart_toy_outlined,
-                color: Colors.white,
-                size: 22,
-              ),
-              SizedBox(width: 7),
-              Text(
-                "Ask AI",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // TOP HEADER
-  // ============================================================
-
   Widget _buildTopHeader() {
     return Row(
       children: [
         Image.asset(
           'assets/images/logo/logo.png',
-          height: 55,
+          height: 52,
+          errorBuilder: (_, __, ___) => const Icon(
+            Icons.favorite,
+            color: rose,
+            size: 38,
+          ),
         ),
         const Spacer(),
         IconButton(
-          onPressed: () {
-            _showComingSoon("Notifications");
-          },
+          tooltip: 'Notifications',
+          onPressed: () => _showComingSoon('Notifications'),
           icon: const Icon(
             Icons.notifications_none_rounded,
-            size: 29,
-            color: Color(0xFF959B7D),
+            size: 28,
+            color: rose,
           ),
         ),
-        const SizedBox(width: 4),
         Container(
-          height: 42,
-          width: 42,
+          height: 43,
+          width: 43,
           decoration: BoxDecoration(
-            color: const Color(0xFFFBECEF),
+            color: blush,
             borderRadius: BorderRadius.circular(15),
           ),
           child: const Icon(
             Icons.person_outline,
-            color: Color(0xFFE89CB0),
+            color: rose,
           ),
         ),
       ],
     );
   }
 
-  // ============================================================
-  // PERSONAL JOURNEY HEALTH CARD
-  // ============================================================
+  // PERSONAL HEALTH JOURNEY
 
   Widget _buildJourneyHealthCard() {
-    if (displayJourney == "🤰 Pregnancy Care") {
-      return _buildPregnancyCard();
+    switch (journeyKey) {
+      case 'pregnancy':
+        return _buildPregnancyCard();
+      case 'menstrual':
+        return _buildMenstrualHealthCard();
+      case 'postpartum':
+        return _buildPostpartumCard();
+      case 'cosmetic':
+        return _buildCosmeticCard();
+      default:
+        return _buildGeneralHealthCard();
     }
-
-    if (displayJourney == "🌸 Menstrual Health") {
-      return _buildMenstrualHealthSummary();
-    }
-
-    if (displayJourney == "👶 Postpartum Recovery") {
-      return _buildPostpartumCard();
-    }
-
-    if (displayJourney == "💚 General Women's Health") {
-      return _buildGeneralHealthCard();
-    }
-
-    if (displayJourney == "✨ Cosmetic Gynecology") {
-      return _buildCosmeticCard();
-    }
-
-    return _dashboardCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "💗 Your Health Journey",
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            "Her Health is here to support you throughout your healthcare journey.",
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.black54,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
   }
-
-  // ============================================================
-  // PREGNANCY CARD
-  // ============================================================
 
   Widget _buildPregnancyCard() {
     int? currentWeek;
@@ -415,66 +289,34 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       estimatedDueDate = parsedDueDate;
 
       final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+      final due = DateTime(
+        parsedDueDate.year,
+        parsedDueDate.month,
+        parsedDueDate.day,
+      );
 
-      final difference = estimatedDueDate.difference(today).inDays;
-
-      weeksRemaining = (difference / 7).ceil();
-
-      currentWeek = 40 - weeksRemaining;
-
-      if (currentWeek < 1) {
-        currentWeek = 1;
-      }
-
-      if (currentWeek > 40) {
-        currentWeek = 40;
-      }
+      weeksRemaining = (due.difference(todayDate).inDays / 7).ceil();
+      currentWeek = (40 - weeksRemaining).clamp(1, 40);
+      weeksRemaining = weeksRemaining.clamp(0, 40);
     } else {
       final enteredWeeks = int.tryParse(weeksPregnant.trim());
 
-      if (enteredWeeks != null) {
+      if (enteredWeeks != null && enteredWeeks >= 1 && enteredWeeks <= 42) {
         currentWeek = enteredWeeks;
-        weeksRemaining = 40 - enteredWeeks;
-
-        if (weeksRemaining < 0) {
-          weeksRemaining = 0;
-        }
+        weeksRemaining = (40 - enteredWeeks).clamp(0, 40);
       }
     }
 
-    String weekText;
-
-    if (currentWeek != null) {
-      weekText = "You're approximately $currentWeek weeks pregnant 🤰";
-    } else {
-      weekText = "Your pregnancy journey 🤰";
-    }
-
-    String remainingText;
-
-    if (weeksRemaining != null) {
-      if (weeksRemaining == 0) {
-        remainingText = "Your estimated due date has arrived. 💗";
-      } else if (weeksRemaining == 1) {
-        remainingText = "About 1 week to go until your estimated due date.";
-      } else {
-        remainingText =
-            "About $weeksRemaining weeks to go until your estimated due date.";
-      }
-    } else {
-      remainingText =
-          "Keep your pregnancy information updated so we can support you.";
-    }
-
-    String trimester = "";
+    String trimester = '';
 
     if (currentWeek != null) {
       if (currentWeek <= 13) {
-        trimester = "First trimester";
+        trimester = 'First trimester';
       } else if (currentWeek <= 27) {
-        trimester = "Second trimester";
+        trimester = 'Second trimester';
       } else {
-        trimester = "Third trimester";
+        trimester = 'Third trimester';
       }
     }
 
@@ -482,739 +324,332 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _iconBox(
-                Icons.pregnant_woman,
-                const Color(0xFFE89CB0),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Pregnancy Journey",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-              ),
-            ],
+          _cardHeading(
+            Icons.favorite_border,
+            'Pregnancy Journey',
           ),
-
-          const SizedBox(height: 18),
-
+          const SizedBox(height: 20),
           Text(
-            weekText,
+            currentWeek == null
+                ? 'Your pregnancy journey'
+                : 'Week $currentWeek of your pregnancy',
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 23,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFE89CB0),
+              color: rose,
             ),
           ),
-
           if (trimester.isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 7),
             Text(
               trimester,
               style: const TextStyle(
-                fontSize: 15,
+                color: forestGreen,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF959B7D),
               ),
             ),
           ],
-
-          const SizedBox(height: 12),
-
+          const SizedBox(height: 14),
           Text(
-            remainingText,
+            weeksRemaining == null
+                ? 'Add your pregnancy information to see your estimated progress.'
+                : weeksRemaining == 0
+                    ? 'Your estimated due date has arrived.'
+                    : 'Approximately $weeksRemaining weeks until your estimated due date.',
             style: const TextStyle(
-              fontSize: 15,
-              color: Colors.black54,
-              height: 1.4,
+              color: warmText,
+              height: 1.5,
             ),
           ),
-
-          const SizedBox(height: 15),
-
-          if (currentWeek != null) _buildPregnancyProgress(currentWeek),
-
-          if (estimatedDueDate != null) ...[
-            const SizedBox(height: 15),
+          if (currentWeek != null) ...[
+            const SizedBox(height: 20),
             Row(
               children: [
-                const Icon(
-                  Icons.event,
-                  color: Color(0xFFE89CB0),
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  "Estimated due date: ${_formatDate(estimatedDueDate)}",
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ],
-
-          const SizedBox(height: 18),
-
-          // ========================================================
-          // SWEET MESSAGE
-          // ========================================================
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDF5F7),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "💗",
-                  style: TextStyle(fontSize: 25),
-                ),
-                SizedBox(width: 10),
-                Expanded(
+                const Expanded(
                   child: Text(
-                    "Every week is another step closer to meeting your little one. Keep taking care of yourself and remember that you're doing your best. 🌸",
+                    'Pregnancy progress',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      height: 1.5,
+                      fontWeight: FontWeight.w600,
+                      color: warmText,
                     ),
                   ),
                 ),
+                Text(
+                  '$currentWeek / 40 weeks',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: forestGreen,
+                  ),
+                ),
               ],
             ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: LinearProgressIndicator(
+                value: currentWeek / 40,
+                minHeight: 9,
+                backgroundColor: blush,
+                valueColor: const AlwaysStoppedAnimation<Color>(rose),
+              ),
+            ),
+          ],
+          if (estimatedDueDate != null) ...[
+            const SizedBox(height: 18),
+            _informationRow(
+              Icons.event_outlined,
+              'Estimated due date',
+              _formatDate(estimatedDueDate),
+            ),
+          ],
+          const SizedBox(height: 20),
+          _softMessage(
+            Icons.favorite_border,
+            'Take things one day at a time. Looking after yourself is an important part of your journey.',
           ),
-
           const SizedBox(height: 18),
-
-          // ========================================================
-          // AI SYMPTOM SECTION - KEPT HERE
-          // ========================================================
-
-          const Text(
-            "How are you feeling today?",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
-            ),
-          ),
-
-          const SizedBox(height: 7),
-
-          const Text(
-            "Are you experiencing any pain, discomfort or symptoms you'd like to talk about?",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
-              height: 1.4,
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                _openAI(
-                  message:
-                      "I am pregnant and I would like to talk about pain, discomfort or symptoms I am experiencing.",
-                );
-              },
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text(
-                "Talk About Your Symptoms",
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE89CB0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(23),
-                ),
-              ),
-            ),
+          _symptomButton(
+            'Talk About Your Symptoms',
+            'I am pregnant and would like to discuss symptoms or questions about my pregnancy.',
           ),
         ],
       ),
     );
   }
 
-  // ============================================================
-  // PREGNANCY PROGRESS
-  // ============================================================
-
-  Widget _buildPregnancyProgress(int currentWeek) {
-    double progress = currentWeek / 40;
-
-    if (progress > 1) {
-      progress = 1;
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              "Pregnancy progress",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black54,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              "$currentWeek / 40 weeks",
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF959B7D),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: LinearProgressIndicator(
-            value: progress,
-            minHeight: 10,
-            backgroundColor: const Color(0xFFF5E3E8),
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              Color(0xFFE89CB0),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ============================================================
-  // MENSTRUAL HEALTH SUMMARY
-  // ============================================================
-
-  Widget _buildMenstrualHealthSummary() {
+  Widget _buildMenstrualHealthCard() {
     final periodDate = _parseDate(lastPeriod);
-
     final parsedCycleLength = int.tryParse(cycleLength.trim()) ?? 28;
-
     final parsedPeriodLength = int.tryParse(periodLength.trim()) ?? 5;
 
-    if (periodDate == null) {
+    if (periodDate == null ||
+        parsedCycleLength < 1 ||
+        parsedPeriodLength < 1 ||
+        parsedPeriodLength > parsedCycleLength) {
       return _dashboardCard(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _cardHeading(
+              Icons.calendar_month_outlined,
+              'Your Menstrual Health',
+            ),
+            const SizedBox(height: 15),
             const Text(
-              "🌸 Your Cycle",
+              'Your cycle information will appear here once your last period date and cycle details are available.',
               style: TextStyle(
-                fontSize: 21,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF959B7D),
+                color: warmText,
+                height: 1.6,
               ),
             ),
-            const SizedBox(height: 10),
-            const Text(
-              "Add your last period date so Her Health can calculate your cycle, expected period and fertile window.",
-              style: TextStyle(
-                color: Colors.black54,
-                height: 1.5,
-              ),
+            const SizedBox(height: 16),
+            _outlinedAction(
+              'Open Period Tracker',
+              () => _openPeriodTracker(),
             ),
           ],
         ),
       );
     }
 
-    final today = DateTime.now();
-
-    final cleanToday = DateTime(today.year, today.month, today.day);
-
-    final cleanPeriod =
-        DateTime(periodDate.year, periodDate.month, periodDate.day);
-
-    final difference = cleanToday.difference(cleanPeriod).inDays;
-
-    int cycleDay = (difference % parsedCycleLength) + 1;
-
-    if (cycleDay < 1) {
-      cycleDay = 1;
-    }
-
-    final nextPeriod = cleanPeriod.add(Duration(days: parsedCycleLength));
-
-    final ovulation = cleanPeriod.add(
-      Duration(days: parsedCycleLength - 14),
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = DateTime(
+      periodDate.year,
+      periodDate.month,
+      periodDate.day,
     );
 
-    final fertileStart = ovulation.subtract(const Duration(days: 5));
+    final daysSincePeriod = today.difference(start).inDays;
+    final cycleDay = (daysSincePeriod % parsedCycleLength) + 1;
 
+    final nextPeriod = start.add(
+      Duration(
+        days: ((daysSincePeriod ~/ parsedCycleLength) + 1) * parsedCycleLength,
+      ),
+    );
+
+    final ovulation = nextPeriod.subtract(const Duration(days: 14));
+    final fertileStart = ovulation.subtract(const Duration(days: 5));
     final fertileEnd = ovulation.add(const Duration(days: 1));
 
-    final daysUntilPeriod = nextPeriod.difference(cleanToday).inDays;
-
-    String mainMessage;
-
-    if (cycleDay <= parsedPeriodLength) {
-      mainMessage =
-          "You're currently around day $cycleDay of your cycle. Be gentle with yourself and remember to listen to your body. 🌸";
-    } else if (cleanToday.isAfter(fertileStart) &&
-        cleanToday.isBefore(
-          fertileEnd.add(const Duration(days: 1)),
-        )) {
-      mainMessage =
-          "You're around your fertile window. Take care of yourself and keep listening to what your body needs. 💚";
-    } else {
-      mainMessage =
-          "You're around day $cycleDay of your cycle. Keep looking after yourself — you've got this! 💕";
-    }
-
-    String periodMessage;
-
-    if (daysUntilPeriod == 0) {
-      periodMessage = "Your next period is expected today. 🌸";
-    } else if (daysUntilPeriod == 1) {
-      periodMessage = "Your next period is expected tomorrow. 🌸";
-    } else if (daysUntilPeriod > 1) {
-      periodMessage = "Your next period is expected in $daysUntilPeriod days.";
-    } else {
-      periodMessage = "Your next period is around ${_formatDate(nextPeriod)}.";
-    }
+    final daysUntilPeriod = nextPeriod.difference(today).inDays;
 
     return _dashboardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _iconBox(
-                Icons.favorite_outline,
-                const Color(0xFFE89CB0),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Your Menstrual Cycle",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-              ),
-            ],
+          _cardHeading(
+            Icons.calendar_month_outlined,
+            'Your Menstrual Cycle',
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           Text(
-            "Cycle Day $cycleDay",
+            'Cycle Day $cycleDay',
             style: const TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFE89CB0),
+              color: rose,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            mainMessage,
+            cycleDay <= parsedPeriodLength
+                ? 'You may be on your period. Listen to your body and give yourself the care you need.'
+                : 'Keep checking in with your body and tracking how you feel throughout your cycle.',
             style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
+              color: warmText,
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 15),
-          _cycleDateRow(
-            "🌸",
-            "Next period",
+          const SizedBox(height: 20),
+          _informationRow(
+            Icons.event_outlined,
+            'Expected next period',
             _formatDate(nextPeriod),
           ),
-          const SizedBox(height: 8),
-          _cycleDateRow(
-            "🌱",
-            "Estimated ovulation",
+          const SizedBox(height: 12),
+          _informationRow(
+            Icons.spa_outlined,
+            'Estimated ovulation',
             _formatDate(ovulation),
           ),
-          const SizedBox(height: 8),
-          _cycleDateRow(
-            "💚",
-            "Fertile window",
-            "${_formatDate(fertileStart)} - ${_formatDate(fertileEnd)}",
+          const SizedBox(height: 12),
+          _informationRow(
+            Icons.date_range_outlined,
+            'Estimated fertile window',
+            '${_formatDate(fertileStart)} – ${_formatDate(fertileEnd)}',
           ),
-          const SizedBox(height: 15),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDF5F7),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              periodMessage,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF959B7D),
-              ),
-            ),
+          const SizedBox(height: 18),
+          _softMessage(
+            Icons.info_outline,
+            'These dates are estimates based on your cycle information. They are not a guarantee of ovulation or a reliable method of preventing pregnancy.',
           ),
-          const SizedBox(height: 15),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                _openAI(
-                  message:
-                      "I am tracking my menstrual cycle and I would like to talk about how I am feeling or any symptoms I am experiencing.",
-                );
-              },
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text(
-                "Talk About Your Symptoms",
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE89CB0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(23),
-                ),
-              ),
-            ),
+          const SizedBox(height: 18),
+          _outlinedAction(
+            'Open Period Tracker',
+            () => _openPeriodTracker(),
+          ),
+          const SizedBox(height: 12),
+          _symptomButton(
+            'Talk About Your Symptoms',
+            'I am tracking my menstrual cycle and would like to discuss my symptoms.',
           ),
         ],
       ),
     );
   }
-
-  // ============================================================
-  // CYCLE DATE ROW
-  // ============================================================
-
-  Widget _cycleDateRow(
-    String emoji,
-    String title,
-    String date,
-  ) {
-    return Row(
-      children: [
-        Text(
-          emoji,
-          style: const TextStyle(fontSize: 22),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
-            ),
-          ),
-        ),
-        Text(
-          date,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF959B7D),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ============================================================
-  // POSTPARTUM CARD
-  // ============================================================
 
   Widget _buildPostpartumCard() {
     final weeks = int.tryParse(postpartumWeeks.trim());
 
-    String weekMessage;
-
-    if (weeks != null) {
-      weekMessage = "You are approximately $weeks weeks postpartum. 👶";
-    } else {
-      weekMessage = "Your postpartum recovery journey 👶";
-    }
-
     return _dashboardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _iconBox(
-                Icons.child_friendly,
-                const Color(0xFFE89CB0),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Postpartum Recovery",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-              ),
-            ],
+          _cardHeading(
+            Icons.child_friendly_outlined,
+            'Postpartum Recovery',
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           Text(
-            weekMessage,
+            weeks != null && weeks >= 0
+                ? 'Around $weeks weeks postpartum'
+                : 'Your recovery journey',
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: Color(0xFFE89CB0),
+              color: rose,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           const Text(
-            "Recovery takes time. Give yourself permission to rest, ask for support and look after your physical and emotional wellbeing. 💗",
+            'Recovery is personal and can take time. Rest when possible, ask for support and look after your physical and emotional wellbeing.',
             style: TextStyle(
-              fontSize: 15,
-              color: Colors.black54,
-              height: 1.5,
+              color: warmText,
+              height: 1.6,
             ),
+          ),
+          const SizedBox(height: 20),
+          _softMessage(
+            Icons.favorite_border,
+            'You deserve care and support while you care for your little one.',
           ),
           const SizedBox(height: 18),
-          const Text(
-            "How are you feeling today?",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            "Are you experiencing any pain, discomfort or symptoms you'd like to talk about?",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                _openAI(
-                  message:
-                      "I am postpartum and I would like to talk about how I am feeling or any recovery concerns I have.",
-                );
-              },
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text(
-                "Talk About Your Symptoms",
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE89CB0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(23),
-                ),
-              ),
-            ),
+          _symptomButton(
+            'Talk About Your Recovery',
+            'I am postpartum and would like to discuss my recovery or symptoms.',
           ),
         ],
       ),
     );
   }
-
-  // ============================================================
-  // GENERAL HEALTH CARD
-  // ============================================================
 
   Widget _buildGeneralHealthCard() {
     return _dashboardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _iconBox(
-                Icons.favorite_outline,
-                const Color(0xFFE89CB0),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Your General Health",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            "Small healthy habits can make a big difference. Keep focusing on your wellbeing one day at a time. 💚",
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.black54,
-              height: 1.5,
-            ),
+          _cardHeading(
+            Icons.favorite_border,
+            'Your General Health',
           ),
           const SizedBox(height: 18),
           const Text(
-            "How are you feeling today?",
+            'Your wellbeing matters. Use this space to explore health questions, understand your body and build healthy habits at your own pace.',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
+              color: warmText,
+              height: 1.6,
             ),
           ),
-          const SizedBox(height: 7),
-          const Text(
-            "Is there anything about your health or wellbeing you'd like to talk about?",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
-              height: 1.4,
-            ),
+          const SizedBox(height: 18),
+          _softMessage(
+            Icons.spa_outlined,
+            'Small steps towards your wellbeing are worth celebrating.',
           ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                _openAI(
-                  message:
-                      "I would like help with my general women's health and wellbeing.",
-                );
-              },
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text(
-                "Talk About Your Health",
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE89CB0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(23),
-                ),
-              ),
-            ),
+          const SizedBox(height: 18),
+          _symptomButton(
+            'Talk About Your Health',
+            'I would like help with my general women’s health and wellbeing.',
           ),
         ],
       ),
     );
   }
-
-  // ============================================================
-  // COSMETIC CARD
-  // ============================================================
 
   Widget _buildCosmeticCard() {
     return _dashboardCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _iconBox(
-                Icons.auto_awesome,
-                const Color(0xFFE89CB0),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Cosmetic Gynecology",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            "Have questions about cosmetic or specialist procedures? Her Health AI can help you understand your options and prepare questions for a healthcare professional.",
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.black54,
-              height: 1.5,
-            ),
+          _cardHeading(
+            Icons.spa_outlined,
+            'Cosmetic Gynecology',
           ),
           const SizedBox(height: 18),
           const Text(
-            "Have questions you'd like to ask?",
+            'Explore information about cosmetic gynecology and specialist procedures. A qualified healthcare professional can explain potential benefits, risks and suitable options.',
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
+              color: warmText,
+              height: 1.6,
             ),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                _openAI(
-                  message:
-                      "I have questions about cosmetic gynecology and would like some information.",
-                );
-              },
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text(
-                "Talk About Your Questions",
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE89CB0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(23),
-                ),
-              ),
-            ),
+          const SizedBox(height: 18),
+          _softMessage(
+            Icons.info_outline,
+            'Make informed decisions with guidance from a qualified healthcare professional.',
+          ),
+          const SizedBox(height: 18),
+          _symptomButton(
+            'Ask a Health Question',
+            'I have questions about cosmetic gynecology and would like general information.',
           ),
         ],
       ),
     );
   }
 
-  // ============================================================
-  // OPEN AI
-  // ============================================================
-
-  void _openAI({
-    String? message,
-  }) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ChatbotScreen(
-          journey: displayJourney,
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // APPOINTMENT CARD
-  // ============================================================
+  // APPOINTMENTS
 
   Widget _buildAppointmentCard() {
     return _dashboardCard(
@@ -1223,194 +658,54 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
         children: [
           Row(
             children: [
-              _iconBox(
-                Icons.calendar_month_outlined,
-                const Color(0xFFE89CB0),
-              ),
+              _iconBox(Icons.calendar_month_outlined),
               const SizedBox(width: 12),
               const Expanded(
                 child: Text(
-                  "Next Appointment",
+                  'Next Appointment',
                   style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
+                    color: forestGreen,
                   ),
                 ),
               ),
               TextButton(
-                onPressed: () {
-                  _showComingSoon("Appointments");
-                },
+                onPressed: () => _showComingSoon('Appointments'),
                 child: const Text(
-                  "View All",
-                  style: TextStyle(
-                    color: Color(0xFFE89CB0),
-                  ),
+                  'View All',
+                  style: TextStyle(color: rose),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           const Text(
-            "No upcoming appointments",
+            'No upcoming appointments',
             style: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
+              color: warmText,
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 7),
           const Text(
-            "Book an appointment with your healthcare provider.",
+            'Your appointment information will be available here.',
             style: TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
+              color: warmText,
+              height: 1.5,
             ),
           ),
-          const SizedBox(height: 15),
-          OutlinedButton(
-            onPressed: () {
-              _showComingSoon("Appointment Booking");
-            },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFE89CB0),
-              side: const BorderSide(
-                color: Color(0xFFE89CB0),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
-              ),
-            ),
-            child: const Text("Book Appointment"),
+          const SizedBox(height: 16),
+          _outlinedAction(
+            'Book Appointment',
+            () => _showComingSoon('Appointment Booking'),
           ),
         ],
       ),
     );
   }
 
-  // ============================================================
-  // PERIOD CARD
-  // ============================================================
-
-  Widget _buildCycleCard() {
-    return _dashboardCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _iconBox(
-                Icons.favorite_outline,
-                const Color(0xFFE89CB0),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  "Your Cycle",
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Expanded(
-                child: _cycleInfo(
-                  "🌸",
-                  "Period",
-                  "Track your cycle",
-                ),
-              ),
-              Expanded(
-                child: _cycleInfo(
-                  "💚",
-                  "Ovulation",
-                  "Track fertility",
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PeriodTrackerScreen(),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE89CB0),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(23),
-                ),
-              ),
-              child: const Text(
-                "Open Period Calendar",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _cycleInfo(
-    String emoji,
-    String title,
-    String subtitle,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFDF5F7),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 27),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.black54,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
   // QUICK ACTIONS
-  // ============================================================
 
   Widget _buildQuickActions() {
     return GridView.count(
@@ -1419,34 +714,33 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.55,
+      childAspectRatio: 1.45,
       children: [
         _quickAction(
           Icons.calendar_month_outlined,
-          "Appointments",
-          () {
-            _showComingSoon("Appointments");
-          },
+          'Appointments',
+          () => _showComingSoon('Appointments'),
         ),
         _quickAction(
           Icons.chat_outlined,
-          "Message Doctor",
-          () {
-            _showComingSoon("Doctor Messaging");
-          },
+          'Message Doctor',
+          () => _showComingSoon('Doctor Messaging'),
         ),
         _quickAction(
-          Icons.notifications_none,
-          "Reminders",
-          () {
-            _showComingSoon("Reminders");
-          },
+          Icons.notifications_none_rounded,
+          'Reminders',
+          () => _showComingSoon('Reminders'),
         ),
         _quickAction(
-          Icons.credit_card_outlined,
-          "Billing",
+          Icons.receipt_long_outlined,
+          'Billing',
           () {
-            _showComingSoon("Billing");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const BillingScreen(),
+              ),
+            );
           },
         ),
       ],
@@ -1458,92 +752,90 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     String title,
     VoidCallback onTap,
   ) {
-    return InkWell(
-      onTap: onTap,
+    return Material(
+      color: Colors.white,
       borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 8,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              height: 42,
-              width: 42,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFBECEF),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFFE89CB0),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: cardBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _iconBox(icon),
+              const SizedBox(height: 9),
+              Text(
                 title,
                 style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF959B7D),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: forestGreen,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ============================================================
-  // JOURNEY CARD
-  // ============================================================
+  Widget _buildCycleCard() {
+    return _dashboardCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _cardHeading(
+            Icons.calendar_month_outlined,
+            'Cycle Tracker',
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Keep your period dates and cycle information together in one place.',
+            style: TextStyle(
+              color: warmText,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _outlinedAction(
+            'Open Period Calendar',
+            _openPeriodTracker,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildJourneyCard() {
     return _dashboardCard(
       child: Row(
         children: [
-          Container(
-            height: 55,
-            width: 55,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBECEF),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.favorite,
-              color: Color(0xFFE89CB0),
-              size: 28,
-            ),
-          ),
+          _iconBox(Icons.favorite_border, size: 52),
           const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Current Healthcare Journey",
+                  'Your Current Journey',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.black54,
+                    color: warmText,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   displayJourney,
                   style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
+                    color: forestGreen,
                   ),
                 ),
               ],
@@ -1554,80 +846,90 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
+  Widget _buildFloatingAIButton() {
+    return Material(
+      color: rose,
+      borderRadius: BorderRadius.circular(30),
+      elevation: 4,
+      child: InkWell(
+        onTap: _openAI,
+        borderRadius: BorderRadius.circular(30),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: 17,
+            vertical: 13,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.chat_bubble_outline,
+                color: Colors.white,
+                size: 21,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Ask AI',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // CALENDAR PAGE
-  // ============================================================
 
   Widget _buildCalendarPage() {
     return SafeArea(
       child: Column(
         children: [
           _pageHeader(
-            "Health Calendar",
+            'Health Calendar',
             Icons.calendar_month_outlined,
           ),
           Expanded(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(25),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.calendar_month_outlined,
-                      size: 80,
-                      color: Color(0xFFE89CB0),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Your Health Calendar",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF959B7D),
+                padding: const EdgeInsets.all(26),
+                child: _dashboardCard(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _iconBox(
+                        Icons.calendar_month_outlined,
+                        size: 76,
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Track your period, fertile window, ovulation and other menstrual cycle information.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PeriodTrackerScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE89CB0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 30,
-                          vertical: 14,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text(
-                        "Open Calendar",
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Your Health Calendar',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 23,
                           fontWeight: FontWeight.bold,
+                          color: forestGreen,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Keep track of your period, cycle information and other health notes.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: warmText,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      _primaryAction(
+                        'Open Period Tracker',
+                        _openPeriodTracker,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1637,82 +939,51 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
   // AI PAGE
-  // ============================================================
 
   Widget _buildAIPage() {
     return SafeArea(
       child: Column(
         children: [
           _pageHeader(
-            "Her Health AI",
-            Icons.smart_toy_outlined,
+            'Her Health AI',
+            Icons.chat_bubble_outline,
           ),
           Expanded(
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(25),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      height: 100,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFBECEF),
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      child: const Icon(
+                child: _dashboardCard(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _iconBox(
                         Icons.smart_toy_outlined,
-                        size: 55,
-                        color: Color(0xFFE89CB0),
+                        size: 80,
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "How can I help you?",
-                      style: TextStyle(
-                        fontSize: 27,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF959B7D),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      "Ask Her Health AI about your healthcare journey, symptoms, cycle or general women's health questions.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    ElevatedButton(
-                      onPressed: () {
-                        _openAI();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE89CB0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 35,
-                          vertical: 15,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text(
-                        "Start Chat",
+                      const SizedBox(height: 20),
+                      const Text(
+                        'How can I help you?',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: forestGreen,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Ask questions about your healthcare journey, symptoms or general women’s health.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: warmText,
+                          height: 1.6,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      _primaryAction('Start Chat', _openAI),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1722,16 +993,14 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
   // DOCTOR PAGE
-  // ============================================================
 
   Widget _buildDoctorPage() {
     return SafeArea(
       child: Column(
         children: [
           _pageHeader(
-            "My Doctor",
+            'My Doctor',
             Icons.medical_services_outlined,
           ),
           Expanded(
@@ -1741,44 +1010,33 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 _dashboardCard(
                   child: Column(
                     children: [
-                      const CircleAvatar(
-                        radius: 38,
-                        backgroundColor: Color(0xFFFBECEF),
-                        child: Icon(
-                          Icons.person,
-                          size: 42,
-                          color: Color(0xFFE89CB0),
-                        ),
+                      _iconBox(
+                        Icons.person_outline,
+                        size: 75,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 15),
                       const Text(
-                        "No doctor assigned yet",
+                        'No doctor assigned yet',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF959B7D),
+                          color: forestGreen,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       const Text(
-                        "Once a healthcare provider is assigned to your profile, you will be able to communicate with them here.",
+                        'Your doctor details and messaging options can be shown here when that feature is connected.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.black54,
-                          height: 1.5,
+                          color: warmText,
+                          height: 1.6,
                         ),
                       ),
                       const SizedBox(height: 20),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          _showComingSoon("Doctor Messaging");
-                        },
-                        icon: const Icon(Icons.chat_outlined),
-                        label: const Text("Message Doctor"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE89CB0),
-                          foregroundColor: Colors.white,
-                        ),
+                      _primaryAction(
+                        'Message Doctor',
+                        () => _showComingSoon('Doctor Messaging'),
                       ),
                     ],
                   ),
@@ -1786,18 +1044,14 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 const SizedBox(height: 15),
                 _quickAction(
                   Icons.calendar_month_outlined,
-                  "Appointments",
-                  () {
-                    _showComingSoon("Appointments");
-                  },
+                  'Appointments',
+                  () => _showComingSoon('Appointments'),
                 ),
                 const SizedBox(height: 12),
                 _quickAction(
                   Icons.description_outlined,
-                  "Medical Records",
-                  () {
-                    _showComingSoon("Medical Records");
-                  },
+                  'Medical Records',
+                  () => _showComingSoon('Medical Records'),
                 ),
               ],
             ),
@@ -1807,9 +1061,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
   // PROFILE PAGE
-  // ============================================================
 
   Widget _buildProfilePage() {
     return SafeArea(
@@ -1817,23 +1069,14 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
         children: [
           _pageHeader(
-            "Health Profile",
+            'Health Profile',
             Icons.person_outline,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           Center(
-            child: Container(
-              height: 95,
-              width: 95,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFBECEF),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Icon(
-                Icons.person,
-                size: 55,
-                color: Color(0xFFE89CB0),
-              ),
+            child: _iconBox(
+              Icons.person_outline,
+              size: 90,
             ),
           ),
           const SizedBox(height: 15),
@@ -1843,105 +1086,91 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF959B7D),
+                color: forestGreen,
               ),
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 6),
           Center(
             child: Text(
               displayJourney,
-              style: const TextStyle(
-                fontSize: 15,
-                color: Colors.black54,
-              ),
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: warmText),
             ),
           ),
           const SizedBox(height: 25),
           _profileOption(
             Icons.person_outline,
-            "Personal Information",
+            'Personal Information',
           ),
           _profileOption(
-            Icons.favorite_outline,
-            "Health Information",
+            Icons.favorite_border,
+            'Health Information',
           ),
           _profileOption(
             Icons.medication_outlined,
-            "Medications",
+            'Medications',
           ),
           _profileOption(
             Icons.warning_amber_outlined,
-            "Allergies",
+            'Allergies',
           ),
           _profileOption(
             Icons.contact_phone_outlined,
-            "Emergency Contact",
+            'Emergency Contact',
           ),
           _profileOption(
             Icons.lock_outline,
-            "Privacy & Security",
+            'Privacy & Security',
           ),
           _profileOption(
             Icons.settings_outlined,
-            "Settings",
+            'Settings',
           ),
         ],
       ),
     );
   }
 
-  Widget _profileOption(
-    IconData icon,
-    String title,
-  ) {
+  Widget _profileOption(IconData icon, String title) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: cardBorder),
       ),
       child: ListTile(
-        leading: Container(
-          height: 42,
-          width: 42,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFBECEF),
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: Icon(
-            icon,
-            color: const Color(0xFFE89CB0),
-          ),
-        ),
+        leading: _iconBox(icon),
         title: Text(
           title,
           style: const TextStyle(
             fontWeight: FontWeight.w600,
-            color: Color(0xFF959B7D),
+            color: forestGreen,
           ),
         ),
         trailing: const Icon(
           Icons.chevron_right,
-          color: Colors.black38,
+          color: warmText,
         ),
-        onTap: () {
-          _showComingSoon(title);
-        },
+        onTap: () => _showComingSoon(title),
       ),
     );
   }
 
-  // ============================================================
   // BOTTOM NAVIGATION
-  // ============================================================
 
   Widget _buildBottomNavigationBar() {
     return NavigationBar(
       selectedIndex: selectedIndex,
       backgroundColor: Colors.white,
-      indicatorColor: const Color(0xFFFBECEF),
+      indicatorColor: blush,
       onDestinationSelected: (index) {
+        if (index == 5) {
+          Navigator.pushNamed(context, '/user-qr');
+          return;
+        }
+
         setState(() {
           selectedIndex = index;
         });
@@ -1949,66 +1178,53 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       destinations: const [
         NavigationDestination(
           icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(
-            Icons.home,
-            color: Color(0xFFE89CB0),
-          ),
-          label: "Home",
+          selectedIcon: Icon(Icons.home, color: rose),
+          label: 'Home',
         ),
         NavigationDestination(
           icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(
-            Icons.calendar_month,
-            color: Color(0xFFE89CB0),
-          ),
-          label: "Calendar",
+          selectedIcon: Icon(Icons.calendar_month, color: rose),
+          label: 'Calendar',
         ),
         NavigationDestination(
           icon: Icon(Icons.smart_toy_outlined),
-          selectedIcon: Icon(
-            Icons.smart_toy,
-            color: Color(0xFFE89CB0),
-          ),
-          label: "AI",
+          selectedIcon: Icon(Icons.smart_toy, color: rose),
+          label: 'AI',
         ),
         NavigationDestination(
-          icon: Icon(Icons.chat_outlined),
-          selectedIcon: Icon(
-            Icons.chat,
-            color: Color(0xFFE89CB0),
-          ),
-          label: "Doctor",
+          icon: Icon(Icons.medical_services_outlined),
+          selectedIcon: Icon(Icons.medical_services, color: rose),
+          label: 'Doctor',
         ),
         NavigationDestination(
           icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(
-            Icons.person,
-            color: Color(0xFFE89CB0),
-          ),
-          label: "Profile",
+          selectedIcon: Icon(Icons.person, color: rose),
+          label: 'Profile',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.qr_code_2_outlined),
+          selectedIcon: Icon(Icons.qr_code_2, color: rose),
+          label: 'My QR',
         ),
       ],
     );
   }
 
-  // ============================================================
-  // REUSABLE DASHBOARD CARD
-  // ============================================================
+  // REUSABLE DESIGN COMPONENTS
 
-  Widget _dashboardCard({
-    required Widget child,
-  }) {
+  Widget _dashboardCard({required Widget child}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: cardBorder),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 3),
+            color: forestGreen.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -2016,59 +1232,64 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
-  // ICON BOX
-  // ============================================================
+  Widget _cardHeading(IconData icon, String title) {
+    return Row(
+      children: [
+        _iconBox(icon),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+              color: forestGreen,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _iconBox(
-    IconData icon,
-    Color color,
-  ) {
+    IconData icon, {
+    double size = 45,
+  }) {
     return Container(
-      height: 45,
-      width: 45,
+      height: size,
+      width: size,
       decoration: BoxDecoration(
-        color: const Color(0xFFFBECEF),
-        borderRadius: BorderRadius.circular(14),
+        color: blush,
+        borderRadius: BorderRadius.circular(size > 50 ? 25 : 14),
       ),
       child: Icon(
         icon,
-        color: color,
+        color: rose,
+        size: size > 50 ? 36 : 23,
       ),
     );
   }
 
-  // ============================================================
-  // PAGE HEADER
-  // ============================================================
-
-  Widget _pageHeader(
-    String title,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 15, 20, 5),
+  Widget _softMessage(IconData icon, String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAF3F3),
+        borderRadius: BorderRadius.circular(17),
+      ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 45,
-            width: 45,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFBECEF),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              icon,
-              color: const Color(0xFFE89CB0),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 25,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF959B7D),
+          Icon(icon, color: rose, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: warmText,
+                height: 1.5,
+              ),
             ),
           ),
         ],
@@ -2076,20 +1297,134 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 
-  // ============================================================
-  // DATE PARSER
-  // ============================================================
+  Widget _informationRow(
+    IconData icon,
+    String title,
+    String value,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: rose, size: 21),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            title,
+            style: const TextStyle(color: warmText),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              color: forestGreen,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _primaryAction(String label, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: rose,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Widget _outlinedAction(String label, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: rose,
+          side: const BorderSide(color: rose),
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+          ),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
+  }
+
+  Widget _symptomButton(String label, String message) {
+    return _primaryAction(
+      label,
+      () => _openAI(message: message),
+    );
+  }
+
+  Widget _pageHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+      child: Row(
+        children: [
+          _iconBox(icon),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: forestGreen,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // NAVIGATION AND HELPERS
+
+  void _openAI({String? message}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatbotScreen(journey: displayJourney),
+      ),
+    );
+  }
+
+  void _openPeriodTracker() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const PeriodTrackerScreen(),
+      ),
+    );
+  }
 
   DateTime? _parseDate(String value) {
-    if (value.trim().isEmpty) {
-      return null;
-    }
+    if (value.trim().isEmpty) return null;
 
     final parsed = DateTime.tryParse(value.trim());
 
-    if (parsed != null) {
-      return parsed;
-    }
+    if (parsed != null) return parsed;
 
     final parts = value.trim().split(RegExp(r'[/\-.]'));
 
@@ -2099,14 +1434,12 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       final third = int.tryParse(parts[2]);
 
       if (first != null && second != null && third != null) {
-        // yyyy-mm-dd
         if (first > 1000) {
-          return DateTime(first, second, third);
+          return _validDate(first, second, third);
         }
 
-        // dd-mm-yyyy or dd/mm/yyyy
         if (third > 1000) {
-          return DateTime(third, second, first);
+          return _validDate(third, second, first);
         }
       }
     }
@@ -2114,28 +1447,31 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     return null;
   }
 
-  // ============================================================
-  // FORMAT DATE
-  // ============================================================
+  DateTime? _validDate(int year, int month, int day) {
+    if (month < 1 || month > 12 || day < 1 || day > 31) {
+      return null;
+    }
+
+    final date = DateTime(year, month, day);
+
+    if (date.year != year || date.month != month || date.day != day) {
+      return null;
+    }
+
+    return date;
+  }
 
   String _formatDate(DateTime date) {
     final day = date.day.toString().padLeft(2, '0');
-
     final month = date.month.toString().padLeft(2, '0');
 
-    return "$day/$month/${date.year}";
+    return '$day/$month/${date.year}';
   }
-
-  // ============================================================
-  // COMING SOON
-  // ============================================================
 
   void _showComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          "$feature will be connected next 🌸",
-        ),
+        content: Text('$feature will be connected next.'),
         duration: const Duration(seconds: 2),
       ),
     );

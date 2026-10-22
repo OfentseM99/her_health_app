@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'patient_dashboard_screen.dart';
+import 'package:flutter/material.dart';
+import 'chatbot_screen.dart';
 
 class JourneyQuestionsScreen extends StatefulWidget {
   final String journey;
@@ -13,329 +11,161 @@ class JourneyQuestionsScreen extends StatefulWidget {
   });
 
   @override
-  State<JourneyQuestionsScreen> createState() => _JourneyQuestionsScreenState();
+  State<JourneyQuestionsScreen> createState() =>
+      _JourneyQuestionsScreenState();
 }
 
 class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
-  // ==================================================
+  // Her Health colours
+  static const Color rose = Color(0xFFB04F6C);
+  static const Color lightRose = Color(0xFFD9879E);
+  static const Color blush = Color(0xFFF6DCE2);
+  static const Color forestGreen = Color(0xFF2F3A2A);
+  static const Color warmText = Color(0xFF5E5652);
+  static const Color cardBorder = Color(0xFFEADFDB);
+
   // Pregnancy Care
-  // ==================================================
+  DateTime? dueDate;
+  final doctorController = TextEditingController();
+  final pregnancyNotesController = TextEditingController();
+  final weeksPregnantController = TextEditingController();
+  final dueDateController = TextEditingController();
+  final pregnancySymptomsController = TextEditingController();
+  final pregnancyConcernsController = TextEditingController();
+  final firstPregnancyController = TextEditingController();
+  final antenatalController = TextEditingController();
+  final complicationsController = TextEditingController();
+  final vitaminsController = TextEditingController();
 
-  final TextEditingController weeksPregnantController = TextEditingController();
-
-  String? firstPregnancy;
-  String? antenatalVisit;
-  String? pregnancyComplications;
-  String? prenatalVitamins;
-
-  final TextEditingController dueDateController = TextEditingController();
-
-  // ==================================================
   // Menstrual Health
-  // ==================================================
+  DateTime? lastPeriod;
+  final cycleLengthController = TextEditingController();
+  final lastPeriodController = TextEditingController();
+  final periodSymptomsController = TextEditingController();
+  final flowController = TextEditingController();
+  final periodLengthController = TextEditingController();
+  final crampsController = TextEditingController();
+  final regularController = TextEditingController();
+  final birthControlController = TextEditingController();
 
-  final TextEditingController lastPeriodController = TextEditingController();
-
-  final TextEditingController cycleLengthController = TextEditingController();
-
-  final TextEditingController periodLengthController = TextEditingController();
-
-  String? painfulCramps;
-  String? regularPeriods;
-  String? birthControl;
-
-  // ==================================================
   // Postpartum Recovery
-  // ==================================================
+  final babyAgeController = TextEditingController();
+  final deliveryTypeController = TextEditingController();
+  final breastfeedingController = TextEditingController();
+  final recoveryConcernsController = TextEditingController();
+  final postpartumWeeksController = TextEditingController();
+  final sleepController = TextEditingController();
+  final moodController = TextEditingController();
+  final postpartumCheckController = TextEditingController();
+  final postpartumConcernController = TextEditingController();
 
-  final TextEditingController postpartumWeeksController =
-      TextEditingController();
-
-  String? breastfeeding;
-
-  String? sleepQuality;
-
-  String? postpartumMood;
-
-  String? postpartumCheckup;
-
-  final TextEditingController postpartumConcernController =
-      TextEditingController();
-
-  // ==================================================
   // General Women's Health
-  // ==================================================
+  final healthGoalsController = TextEditingController();
+  final heightController = TextEditingController();
+  final weightController = TextEditingController();
+  final exerciseController = TextEditingController();
+  final waterController = TextEditingController();
+  final sleepHoursController = TextEditingController();
+  final healthConcernController = TextEditingController();
 
-  final TextEditingController heightController = TextEditingController();
-
-  final TextEditingController weightController = TextEditingController();
-
-  String? exercise;
-
-  final TextEditingController waterController = TextEditingController();
-
-  final TextEditingController sleepHoursController = TextEditingController();
-
-  final TextEditingController healthConcernController = TextEditingController();
-
-  // ==================================================
   // Cosmetic Gynecology
-  // ==================================================
+  final cosmeticQuestionsController = TextEditingController();
+  final cosmeticGoalController = TextEditingController();
+  final previousProcedureController = TextEditingController();
+  final specialistController = TextEditingController();
+  final expectedOutcomeController = TextEditingController();
 
-  final TextEditingController cosmeticGoalController = TextEditingController();
+  // Identify the selected journey, with or without emojis.
+  String get journeyKey {
+    final value = widget.journey.toLowerCase();
 
-  String? previousProcedure;
+    if (value.contains('pregnancy care')) {
+      return 'pregnancy';
+    } else if (value.contains('menstrual health')) {
+      return 'menstrual';
+    } else if (value.contains('postpartum recovery')) {
+      return 'postpartum';
+    } else if (value.contains('general') &&
+        value.contains("women's health")) {
+      return 'general';
+    } else if (value.contains('cosmetic gynecology')) {
+      return 'cosmetic';
+    }
 
-  String? specialist;
-
-  final TextEditingController expectedOutcomeController =
-      TextEditingController();
-
-  // ==================================================
-  // Dispose Controllers
-  // ==================================================
+    return '';
+  }
 
   @override
   void dispose() {
-    weeksPregnantController.dispose();
-    dueDateController.dispose();
+    final controllers = [
+      doctorController,
+      pregnancyNotesController,
+      weeksPregnantController,
+      dueDateController,
+      pregnancySymptomsController,
+      pregnancyConcernsController,
+      firstPregnancyController,
+      antenatalController,
+      complicationsController,
+      vitaminsController,
+      cycleLengthController,
+      lastPeriodController,
+      periodSymptomsController,
+      flowController,
+      periodLengthController,
+      crampsController,
+      regularController,
+      birthControlController,
+      babyAgeController,
+      deliveryTypeController,
+      breastfeedingController,
+      recoveryConcernsController,
+      postpartumWeeksController,
+      sleepController,
+      moodController,
+      postpartumCheckController,
+      postpartumConcernController,
+      healthGoalsController,
+      heightController,
+      weightController,
+      exerciseController,
+      waterController,
+      sleepHoursController,
+      healthConcernController,
+      cosmeticQuestionsController,
+      cosmeticGoalController,
+      previousProcedureController,
+      specialistController,
+      expectedOutcomeController,
+    ];
 
-    lastPeriodController.dispose();
-    cycleLengthController.dispose();
-    periodLengthController.dispose();
-
-    postpartumWeeksController.dispose();
-    postpartumConcernController.dispose();
-
-    heightController.dispose();
-    weightController.dispose();
-    waterController.dispose();
-    sleepHoursController.dispose();
-    healthConcernController.dispose();
-
-    cosmeticGoalController.dispose();
-    expectedOutcomeController.dispose();
+    for (final controller in controllers) {
+      controller.dispose();
+    }
 
     super.dispose();
   }
 
-  // ==================================================
-  // Section Title
-  // ==================================================
-
-  Widget sectionTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        top: 15,
-        bottom: 15,
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF959B7D),
-        ),
-      ),
-    );
-  }
-
-  // ==================================================
-  // INTEGER FIELD
-  // ==================================================
-
-  Widget buildIntegerQuestion(
-    String label,
-    TextEditingController controller,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-        ],
-        decoration: _inputDecoration(
-          label,
-          suffixIcon: const Icon(
-            Icons.keyboard_alt_outlined,
-            color: Color(0xFF959B7D),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ==================================================
-  // NORMAL TEXT FIELD
-  // ==================================================
-
-  Widget buildQuestion(
-    String label,
-    TextEditingController controller,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: TextField(
-        controller: controller,
-        maxLines: 1,
-        decoration: _inputDecoration(label),
-      ),
-    );
-  }
-
-  // ==================================================
-  // MULTI-LINE TEXT FIELD
-  // ==================================================
-
-  Widget buildLongQuestion(
-    String label,
-    TextEditingController controller,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: TextField(
-        controller: controller,
-        maxLines: 4,
-        decoration: _inputDecoration(label),
-      ),
-    );
-  }
-
-  // ==================================================
-  // YES / NO DROPDOWN
-  // ==================================================
-
-  Widget buildYesNoQuestion(
-    String label,
-    String? value,
-    ValueChanged<String?> onChanged,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: _inputDecoration(
-          label,
-          suffixIcon: const Icon(
-            Icons.arrow_drop_down,
-            color: Color(0xFF959B7D),
-            size: 30,
-          ),
-        ),
-        items: const [
-          DropdownMenuItem(
-            value: "Yes",
-            child: Text("Yes"),
-          ),
-          DropdownMenuItem(
-            value: "No",
-            child: Text("No"),
-          ),
-        ],
-        onChanged: onChanged,
-        dropdownColor: Colors.white,
-      ),
-    );
-  }
-
-  // ==================================================
-  // DROPDOWN WITH CUSTOM OPTIONS
-  // ==================================================
-
-  Widget buildDropdownQuestion(
-    String label,
-    String? value,
-    List<String> options,
-    ValueChanged<String?> onChanged,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: _inputDecoration(
-          label,
-          suffixIcon: const Icon(
-            Icons.arrow_drop_down,
-            color: Color(0xFF959B7D),
-            size: 30,
-          ),
-        ),
-        items: options.map((option) {
-          return DropdownMenuItem<String>(
-            value: option,
-            child: Text(option),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        dropdownColor: Colors.white,
-      ),
-    );
-  }
-
-  // ==================================================
-  // INPUT DECORATION
-  // ==================================================
-
-  InputDecoration _inputDecoration(
-    String label, {
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: const TextStyle(
-        color: Color(0xFF959B7D),
-      ),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 18,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: Color(0xFFE89CB0),
-          width: 2,
-        ),
-      ),
-    );
-  }
-
-  // ==================================================
-  // DATE PICKER
-  // ==================================================
-
-  Future<void> selectDate(
-    TextEditingController controller, {
-    DateTime? firstDate,
-    DateTime? lastDate,
+  // Show a date picker.
+  Future<void> pickDate({
+    required DateTime? currentDate,
+    required Function(DateTime) onSelected,
   }) async {
     final now = DateTime.now();
 
-    final pickedDate = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
-      initialDate: now,
-      firstDate: firstDate ?? DateTime(1950),
-      lastDate: lastDate ?? DateTime(2100),
+      initialDate: currentDate ?? now,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFE89CB0),
+              primary: rose,
               onPrimary: Colors.white,
               surface: Colors.white,
-              onSurface: Color(0xFF959B7D),
+              onSurface: forestGreen,
             ),
           ),
           child: child!,
@@ -343,283 +173,146 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
       },
     );
 
-    if (pickedDate == null) {
-      return;
+    if (picked != null && mounted) {
+      setState(() {
+        onSelected(picked);
+      });
     }
-
-    final formattedDate = "${pickedDate.year.toString().padLeft(4, '0')}-"
-        "${pickedDate.month.toString().padLeft(2, '0')}-"
-        "${pickedDate.day.toString().padLeft(2, '0')}";
-
-    setState(() {
-      controller.text = formattedDate;
-    });
   }
 
-  // ==================================================
-  // DATE FIELD
-  // ==================================================
+  String formatDate(DateTime? date) {
+    if (date == null) return '';
 
-  Widget buildDateQuestion(
+    return '${date.day.toString().padLeft(2, '0')}/'
+        '${date.month.toString().padLeft(2, '0')}/'
+        '${date.year}';
+  }
+
+  // Section heading.
+  Widget sectionTitle(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            height: 44,
+            width: 44,
+            decoration: BoxDecoration(
+              color: blush,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              icon,
+              color: rose,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: forestGreen,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Reusable question field.
+  Widget buildQuestion(
     String label,
     TextEditingController controller, {
-    DateTime? firstDate,
-    DateTime? lastDate,
+    IconData icon = Icons.edit_outlined,
+    VoidCallback? onTap,
+    bool readOnly = false,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.only(bottom: 16),
       child: TextField(
         controller: controller,
-        readOnly: true,
-        onTap: () {
-          selectDate(
-            controller,
-            firstDate: firstDate,
-            lastDate: lastDate,
-          );
-        },
-        decoration: _inputDecoration(
-          label,
-          suffixIcon: const Icon(
-            Icons.calendar_month_outlined,
-            color: Color(0xFF959B7D),
+        onTap: onTap,
+        readOnly: readOnly,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        style: const TextStyle(
+          color: forestGreen,
+          fontSize: 15,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(
+            color: warmText,
+            fontSize: 14,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: lightRose,
+            size: 21,
+          ),
+          filled: true,
+          fillColor: const Color(0xFFFFFCFB),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 17,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: const BorderSide(color: cardBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: const BorderSide(color: cardBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: const BorderSide(
+              color: rose,
+              width: 1.5,
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ==================================================
-  // SAVE JOURNEY
-  // ==================================================
-
-  Future<void> saveJourney() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // --------------------------------------------------
-    // Save setup completion
-    // --------------------------------------------------
-
-    await prefs.setBool(
-      'setupCompleted',
-      true,
-    );
-
-    // --------------------------------------------------
-    // Save selected journey
-    // --------------------------------------------------
-
-    await prefs.setString(
-      'selectedJourney',
-      widget.journey,
-    );
-
-    // ==================================================
-    // PREGNANCY CARE
-    // ==================================================
-
-    if (widget.journey == "🤰 Pregnancy Care") {
-      await prefs.setString(
-        'weeksPregnant',
-        weeksPregnantController.text,
-      );
-
-      await prefs.setString(
-        'firstPregnancy',
-        firstPregnancy ?? "",
-      );
-
-      await prefs.setString(
-        'antenatalVisit',
-        antenatalVisit ?? "",
-      );
-
-      await prefs.setString(
-        'pregnancyComplications',
-        pregnancyComplications ?? "",
-      );
-
-      await prefs.setString(
-        'prenatalVitamins',
-        prenatalVitamins ?? "",
-      );
-
-      await prefs.setString(
-        'dueDate',
-        dueDateController.text,
-      );
-    }
-
-    // ==================================================
-    // MENSTRUAL HEALTH
-    // ==================================================
-
-    if (widget.journey == "🌸 Menstrual Health") {
-      await prefs.setString(
-        'lastPeriod',
-        lastPeriodController.text,
-      );
-
-      await prefs.setString(
-        'cycleLength',
-        cycleLengthController.text,
-      );
-
-      await prefs.setString(
-        'periodLength',
-        periodLengthController.text,
-      );
-
-      await prefs.setString(
-        'painfulCramps',
-        painfulCramps ?? "",
-      );
-
-      await prefs.setString(
-        'regularPeriods',
-        regularPeriods ?? "",
-      );
-
-      await prefs.setString(
-        'birthControl',
-        birthControl ?? "",
-      );
-    }
-
-    // ==================================================
-    // POSTPARTUM RECOVERY
-    // ==================================================
-
-    if (widget.journey == "👶 Postpartum Recovery") {
-      await prefs.setString(
-        'postpartumWeeks',
-        postpartumWeeksController.text,
-      );
-
-      await prefs.setString(
-        'breastfeeding',
-        breastfeeding ?? "",
-      );
-
-      await prefs.setString(
-        'sleepQuality',
-        sleepQuality ?? "",
-      );
-
-      await prefs.setString(
-        'postpartumMood',
-        postpartumMood ?? "",
-      );
-
-      await prefs.setString(
-        'postpartumCheckup',
-        postpartumCheckup ?? "",
-      );
-
-      await prefs.setString(
-        'postpartumConcern',
-        postpartumConcernController.text,
-      );
-    }
-
-    // ==================================================
-    // GENERAL WOMEN'S HEALTH
-    // ==================================================
-
-    if (widget.journey == "💚 General Women's Health") {
-      await prefs.setString(
-        'height',
-        heightController.text,
-      );
-
-      await prefs.setString(
-        'weight',
-        weightController.text,
-      );
-
-      await prefs.setString(
-        'exercise',
-        exercise ?? "",
-      );
-
-      await prefs.setString(
-        'water',
-        waterController.text,
-      );
-
-      await prefs.setString(
-        'sleepHours',
-        sleepHoursController.text,
-      );
-
-      await prefs.setString(
-        'healthConcern',
-        healthConcernController.text,
-      );
-    }
-
-    // ==================================================
-    // COSMETIC GYNECOLOGY
-    // ==================================================
-
-    if (widget.journey == "✨ Cosmetic Gynecology") {
-      await prefs.setString(
-        'cosmeticGoal',
-        cosmeticGoalController.text,
-      );
-
-      await prefs.setString(
-        'previousProcedure',
-        previousProcedure ?? "",
-      );
-
-      await prefs.setString(
-        'specialist',
-        specialist ?? "",
-      );
-
-      await prefs.setString(
-        'expectedOutcome',
-        expectedOutcomeController.text,
-      );
-    }
-
-    // ==================================================
-    // GO TO DASHBOARD
-    // ==================================================
-
-    if (!mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const PatientDashboardScreen(),
-      ),
-      (route) => false,
-    );
-  }
-
-  // ==================================================
-  // CONTINUE BUTTON
-  // ==================================================
-
+  // Continue to the chatbot only for a recognised journey.
   Widget continueButton() {
     return SizedBox(
       width: double.infinity,
-      height: 55,
-      child: ElevatedButton(
+      height: 56,
+      child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFE89CB0),
+          backgroundColor: rose,
           foregroundColor: Colors.white,
+          elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        onPressed: saveJourney,
-        child: const Text(
-          "Continue to Her Health 🌸",
+        onPressed: journeyKey.isEmpty
+            ? null
+            : () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChatbotScreen(
+                      journey: widget.journey,
+                    ),
+                  ),
+                );
+              },
+        icon: const Icon(Icons.chat_bubble_outline),
+        label: const Text(
+          'Continue to Her Health AI',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -627,350 +320,352 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
     );
   }
 
-  // ==================================================
-  // BUILD
-  // ==================================================
+  // Remove common emoji prefixes from the displayed title.
+  String get displayJourney {
+    return widget.journey
+        .replaceAll('🤰 ', '')
+        .replaceAll('🌸 ', '')
+        .replaceAll('👶 ', '')
+        .replaceAll('💚 ', '')
+        .replaceAll('✨ ', '');
+  }
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ==================================================
-          // BACKGROUND
-          // ==================================================
-
+          // Keep the existing background image.
           Image.asset(
             'assets/images/backgrounds/background.jpeg',
             fit: BoxFit.cover,
           ),
 
-          // ==================================================
-          // OVERLAY
-          // ==================================================
-
           Container(
-            color: Colors.white.withValues(alpha: 0.25),
+            color: Colors.white.withValues(alpha: 0.28),
           ),
-
-          // ==================================================
-          // MAIN CONTENT
-          // ==================================================
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Container(
-                padding: const EdgeInsets.all(25),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 15,
-                      color: Colors.black12,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ==================================================
-                    // LOGO
-                    // ==================================================
-
-                    Center(
-                      child: Image.asset(
-                        'assets/images/logo/logo.png',
-                        height: 90,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // ==================================================
-                    // JOURNEY NAME
-                    // ==================================================
-
-                    Center(
-                      child: Text(
-                        widget.journey,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF959B7D),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.96),
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: cardBorder),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x18000000),
+                          blurRadius: 18,
+                          offset: Offset(0, 6),
                         ),
-                      ),
+                      ],
                     ),
-
-                    const SizedBox(height: 10),
-
-                    const Center(
-                      child: Text(
-                        "Let's get to know you better so Her Health can provide personalised support.",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back button.
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            tooltip: 'Go back',
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: rose,
+                              size: 27,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 30),
-
-                    // ==================================================
-                    // PREGNANCY CARE
-                    // ==================================================
-
-                    if (widget.journey == "🤰 Pregnancy Care") ...[
-                      sectionTitle("🤰 Pregnancy Care"),
-                      buildIntegerQuestion(
-                        "🤰 How many weeks pregnant are you?",
-                        weeksPregnantController,
-                      ),
-                      buildYesNoQuestion(
-                        "👩 Is this your first pregnancy?",
-                        firstPregnancy,
-                        (value) {
-                          setState(() {
-                            firstPregnancy = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "🏥 Have you had your first antenatal visit?",
-                        antenatalVisit,
-                        (value) {
-                          setState(() {
-                            antenatalVisit = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "🩸 Do you have any pregnancy complications?",
-                        pregnancyComplications,
-                        (value) {
-                          setState(() {
-                            pregnancyComplications = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "💊 Are you taking prenatal vitamins?",
-                        prenatalVitamins,
-                        (value) {
-                          setState(() {
-                            prenatalVitamins = value;
-                          });
-                        },
-                      ),
-                      buildDateQuestion(
-                        "📅 Estimated Due Date",
-                        dueDateController,
-                        firstDate: now,
-                        lastDate: DateTime(
-                          now.year + 1,
-                          now.month,
-                          now.day,
+                        // Keep the existing logo.
+                        Center(
+                          child: Image.asset(
+                            'assets/images/logo/logo.png',
+                            height: 90,
+                          ),
                         ),
-                      ),
-                    ],
 
-                    // ==================================================
-                    // MENSTRUAL HEALTH
-                    // ==================================================
+                        const SizedBox(height: 20),
 
-                    if (widget.journey == "🌸 Menstrual Health") ...[
-                      sectionTitle("🌸 Menstrual Health"),
-                      buildDateQuestion(
-                        "📅 First day of your last period",
-                        lastPeriodController,
-                        firstDate: DateTime(1950),
-                        lastDate: now,
-                      ),
-                      buildIntegerQuestion(
-                        "🔄 Average cycle length (days)",
-                        cycleLengthController,
-                      ),
-                      buildIntegerQuestion(
-                        "🩸 Average period length (days)",
-                        periodLengthController,
-                      ),
-                      buildYesNoQuestion(
-                        "😖 Do you experience painful cramps?",
-                        painfulCramps,
-                        (value) {
-                          setState(() {
-                            painfulCramps = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "😊 Are your periods regular?",
-                        regularPeriods,
-                        (value) {
-                          setState(() {
-                            regularPeriods = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "💊 Are you using any birth control?",
-                        birthControl,
-                        (value) {
-                          setState(() {
-                            birthControl = value;
-                          });
-                        },
-                      ),
-                    ],
+                        Center(
+                          child: Text(
+                            displayJourney,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 27,
+                              fontWeight: FontWeight.w800,
+                              color: forestGreen,
+                            ),
+                          ),
+                        ),
 
-                    // ==================================================
-                    // POSTPARTUM RECOVERY
-                    // ==================================================
+                        const SizedBox(height: 12),
 
-                    if (widget.journey == "👶 Postpartum Recovery") ...[
-                      sectionTitle("👶 Postpartum Recovery"),
-                      buildIntegerQuestion(
-                        "🍼 How many weeks postpartum are you?",
-                        postpartumWeeksController,
-                      ),
-                      buildYesNoQuestion(
-                        "🤱 Are you breastfeeding?",
-                        breastfeeding,
-                        (value) {
-                          setState(() {
-                            breastfeeding = value;
-                          });
-                        },
-                      ),
-                      buildDropdownQuestion(
-                        "😴 How is your sleep quality?",
-                        sleepQuality,
-                        const [
-                          "Good",
-                          "Okay",
-                          "Poor",
+                        const Center(
+                          child: Text(
+                            'Let’s get to know you better so Her Health AI can give you personalised support.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 15,
+                              height: 1.5,
+                              color: warmText,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // Pregnancy Care questions.
+                        if (journeyKey == 'pregnancy') ...[
+                          sectionTitle(
+                            'Pregnancy Care',
+                            Icons.favorite_border,
+                          ),
+                          buildQuestion(
+                            'How many weeks pregnant are you?',
+                            weeksPregnantController,
+                            icon: Icons.calendar_month_outlined,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Is this your first pregnancy?',
+                            firstPregnancyController,
+                            icon: Icons.person_outline,
+                          ),
+                          buildQuestion(
+                            'Have you had your first antenatal visit?',
+                            antenatalController,
+                            icon: Icons.medical_services_outlined,
+                          ),
+                          buildQuestion(
+                            'Do you have any pregnancy complications?',
+                            complicationsController,
+                            icon: Icons.health_and_safety_outlined,
+                            maxLines: 2,
+                          ),
+                          buildQuestion(
+                            'Are you taking prenatal vitamins?',
+                            vitaminsController,
+                            icon: Icons.medication_outlined,
+                          ),
+                          buildQuestion(
+                            'Estimated due date',
+                            dueDateController,
+                            icon: Icons.event_outlined,
+                            readOnly: true,
+                            onTap: () => pickDate(
+                              currentDate: dueDate,
+                              onSelected: (date) {
+                                dueDate = date;
+                                dueDateController.text = formatDate(date);
+                              },
+                            ),
+                          ),
                         ],
-                        (value) {
-                          setState(() {
-                            sleepQuality = value;
-                          });
-                        },
-                      ),
-                      buildDropdownQuestion(
-                        "😊 How has your mood been recently?",
-                        postpartumMood,
-                        const [
-                          "Good",
-                          "Okay",
-                          "Low",
+
+                        // Menstrual Health questions.
+                        if (journeyKey == 'menstrual') ...[
+                          sectionTitle(
+                            'Menstrual Health',
+                            Icons.calendar_month_outlined,
+                          ),
+                          buildQuestion(
+                            'First day of your last period',
+                            lastPeriodController,
+                            icon: Icons.event_outlined,
+                            readOnly: true,
+                            onTap: () => pickDate(
+                              currentDate: lastPeriod,
+                              onSelected: (date) {
+                                lastPeriod = date;
+                                lastPeriodController.text = formatDate(date);
+                              },
+                            ),
+                          ),
+                          buildQuestion(
+                            'Average cycle length (days)',
+                            cycleLengthController,
+                            icon: Icons.loop_outlined,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Average period length (days)',
+                            periodLengthController,
+                            icon: Icons.calendar_today_outlined,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Do you experience painful cramps?',
+                            crampsController,
+                            icon: Icons.healing_outlined,
+                          ),
+                          buildQuestion(
+                            'Are your periods regular?',
+                            regularController,
+                            icon: Icons.sync_outlined,
+                          ),
+                          buildQuestion(
+                            'Are you using any birth control?',
+                            birthControlController,
+                            icon: Icons.medication_outlined,
+                          ),
                         ],
-                        (value) {
-                          setState(() {
-                            postpartumMood = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "🩺 Have you attended your postpartum check-up?",
-                        postpartumCheckup,
-                        (value) {
-                          setState(() {
-                            postpartumCheckup = value;
-                          });
-                        },
-                      ),
-                      buildLongQuestion(
-                        "❤️ Do you have any concerns you'd like support with?",
-                        postpartumConcernController,
-                      ),
-                    ],
 
-                    // ==================================================
-                    // GENERAL WOMEN'S HEALTH
-                    // ==================================================
+                        // Postpartum Recovery questions.
+                        if (journeyKey == 'postpartum') ...[
+                          sectionTitle(
+                            'Postpartum Recovery',
+                            Icons.child_care_outlined,
+                          ),
+                          buildQuestion(
+                            'How many weeks postpartum are you?',
+                            postpartumWeeksController,
+                            icon: Icons.calendar_month_outlined,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Are you breastfeeding?',
+                            breastfeedingController,
+                            icon: Icons.favorite_border,
+                          ),
+                          buildQuestion(
+                            'How is your sleep quality?',
+                            sleepController,
+                            icon: Icons.bedtime_outlined,
+                          ),
+                          buildQuestion(
+                            'How has your mood been recently?',
+                            moodController,
+                            icon: Icons.mood_outlined,
+                          ),
+                          buildQuestion(
+                            'Have you attended your postpartum check-up?',
+                            postpartumCheckController,
+                            icon: Icons.medical_services_outlined,
+                          ),
+                          buildQuestion(
+                            'Any concerns you would like support with?',
+                            postpartumConcernController,
+                            icon: Icons.chat_bubble_outline,
+                            maxLines: 3,
+                          ),
+                        ],
 
-                    if (widget.journey == "💚 General Women's Health") ...[
-                      sectionTitle("💚 General Women's Health"),
-                      buildIntegerQuestion(
-                        "📏 Height (cm)",
-                        heightController,
-                      ),
-                      buildIntegerQuestion(
-                        "⚖️ Weight (kg)",
-                        weightController,
-                      ),
-                      buildYesNoQuestion(
-                        "🏃 Do you exercise regularly?",
-                        exercise,
-                        (value) {
-                          setState(() {
-                            exercise = value;
-                          });
-                        },
-                      ),
-                      buildIntegerQuestion(
-                        "💧 How many glasses of water do you drink daily?",
-                        waterController,
-                      ),
-                      buildIntegerQuestion(
-                        "😴 Average hours of sleep per night",
-                        sleepHoursController,
-                      ),
-                      buildLongQuestion(
-                        "🩺 Any current health concerns?",
-                        healthConcernController,
-                      ),
-                    ],
+                        // General Women's Health questions.
+                        if (journeyKey == 'general') ...[
+                          sectionTitle(
+                            "General Women's Health",
+                            Icons.health_and_safety_outlined,
+                          ),
+                          buildQuestion(
+                            'Height (cm)',
+                            heightController,
+                            icon: Icons.height,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Weight (kg)',
+                            weightController,
+                            icon: Icons.monitor_weight_outlined,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Do you exercise regularly?',
+                            exerciseController,
+                            icon: Icons.fitness_center_outlined,
+                          ),
+                          buildQuestion(
+                            'How much water do you drink daily?',
+                            waterController,
+                            icon: Icons.water_drop_outlined,
+                          ),
+                          buildQuestion(
+                            'Average hours of sleep per night',
+                            sleepHoursController,
+                            icon: Icons.bedtime_outlined,
+                            keyboardType: TextInputType.number,
+                          ),
+                          buildQuestion(
+                            'Any current health concerns?',
+                            healthConcernController,
+                            icon: Icons.health_and_safety_outlined,
+                            maxLines: 3,
+                          ),
+                        ],
 
-                    // ==================================================
-                    // COSMETIC GYNECOLOGY
-                    // ==================================================
+                        // Cosmetic Gynecology questions.
+                        if (journeyKey == 'cosmetic') ...[
+                          sectionTitle(
+                            'Cosmetic Gynecology',
+                            Icons.spa_outlined,
+                          ),
+                          buildQuestion(
+                            'What would you like to improve?',
+                            cosmeticGoalController,
+                            icon: Icons.favorite_border,
+                            maxLines: 2,
+                          ),
+                          buildQuestion(
+                            'Have you had any previous procedures?',
+                            previousProcedureController,
+                            icon: Icons.medical_services_outlined,
+                            maxLines: 2,
+                          ),
+                          buildQuestion(
+                            'Have you consulted a specialist before?',
+                            specialistController,
+                            icon: Icons.person_outline,
+                          ),
+                          buildQuestion(
+                            'What outcome are you hoping for?',
+                            expectedOutcomeController,
+                            icon: Icons.chat_bubble_outline,
+                            maxLines: 3,
+                          ),
+                        ],
 
-                    if (widget.journey == "✨ Cosmetic Gynecology") ...[
-                      sectionTitle("✨ Cosmetic Gynecology"),
-                      buildLongQuestion(
-                        "💬 What would you like to improve?",
-                        cosmeticGoalController,
-                      ),
-                      buildYesNoQuestion(
-                        "📅 Have you had any previous procedures?",
-                        previousProcedure,
-                        (value) {
-                          setState(() {
-                            previousProcedure = value;
-                          });
-                        },
-                      ),
-                      buildYesNoQuestion(
-                        "👩‍⚕️ Have you consulted a specialist before?",
-                        specialist,
-                        (value) {
-                          setState(() {
-                            specialist = value;
-                          });
-                        },
-                      ),
-                      buildLongQuestion(
-                        "⭐ What outcome are you hoping for?",
-                        expectedOutcomeController,
-                      ),
-                    ],
+                        // Explain when a journey name is not recognised.
+                        if (journeyKey.isEmpty) ...[
+                          const SizedBox(height: 20),
+                          const Text(
+                            'We could not identify this health journey. Please return to the previous screen and select a journey again.',
+                            style: TextStyle(
+                              color: warmText,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
 
-                    const SizedBox(height: 20),
+                        // Only show Continue for a recognised journey.
+                        if (journeyKey.isNotEmpty) ...[
+                          const SizedBox(height: 20),
+                          continueButton(),
+                        ],
 
-                    // ==================================================
-                    // CONTINUE
-                    // ==================================================
+                        const SizedBox(height: 12),
 
-                    continueButton(),
-                  ],
+                        const Center(
+                          child: Text(
+                            'Your health journey, supported with care.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: warmText,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

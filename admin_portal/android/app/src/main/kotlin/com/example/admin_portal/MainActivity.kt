@@ -1,5 +1,6 @@
-package com.example.admin_portal
 
-import io.flutter.embedding.android.FlutterActivity
+package com.example.her_health_app
 
-class MainActivity : FlutterActivity()
+import io.flutter.embedding.android.FlutterFragmentActivity
+
+class MainActivity : FlutterFragmentActivity()

@@ -9,14 +9,40 @@ class HealthSetupScreen extends StatefulWidget {
 }
 
 class _HealthSetupScreenState extends State<HealthSetupScreen> {
+  static const Color rose = Color(0xFFB04F6C);
+  static const Color blushPink = Color(0xFFF6DCE2);
+  static const Color forestGreen = Color(0xFF2F3A2A);
+  static const Color warmText = Color(0xFF5E5652);
+  static const Color cardBorder = Color(0xFFEADFDB);
+
   String? selectedJourney;
 
-  final List<String> journeys = [
-    "🤰 Pregnancy Care",
-    "🌸 Menstrual Health",
-    "👶 Postpartum Recovery",
-    "💚 General Women's Health",
-    "✨ Cosmetic Gynecology",
+  final List<Map<String, dynamic>> journeys = [
+    {
+      'title': 'Pregnancy Care',
+      'description': 'Support throughout your pregnancy journey.',
+      'icon': Icons.pregnant_woman_outlined,
+    },
+    {
+      'title': 'Menstrual Health',
+      'description': 'Understand and track your menstrual cycle.',
+      'icon': Icons.calendar_month_outlined,
+    },
+    {
+      'title': 'Postpartum Recovery',
+      'description': 'Care and support after giving birth.',
+      'icon': Icons.child_care_outlined,
+    },
+    {
+      'title': "General Women's Health",
+      'description': 'Everyday wellness and preventive care.',
+      'icon': Icons.health_and_safety_outlined,
+    },
+    {
+      'title': 'Cosmetic Gynecology',
+      'description': 'Explore intimate health and wellness information.',
+      'icon': Icons.spa_outlined,
+    },
   ];
 
   @override
@@ -34,140 +60,213 @@ class _HealthSetupScreenState extends State<HealthSetupScreen> {
           ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(25),
-              child: Column(
-                children: [
-                  Image.asset(
-                    'assets/images/logo/logo.png',
-                    height: 110,
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    "Welcome Name 🌸",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF959B7D),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    "Let's personalise your Her Health journey",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Color(0xFF959B7D),
-                    ),
-                  ),
-                  const SizedBox(height: 35),
-                  Container(
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.92),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 15,
-                          color: Colors.black12,
-                          offset: Offset(0, 5),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 22,
+                vertical: 24,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo/logo.png',
+                        height: 105,
+                      ),
+                      const SizedBox(height: 22),
+                      const Text(
+                        'Welcome to Her Health',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 29,
+                          fontWeight: FontWeight.w800,
+                          color: forestGreen,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.favorite,
-                          size: 60,
-                          color: Color(0xFFE89CB0),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        "Let's personalise your health journey.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: warmText,
                         ),
-                        const SizedBox(height: 15),
-                        const Text(
-                          "Which best describes your current healthcare journey?",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF959B7D),
-                          ),
-                        ),
-                        const SizedBox(height: 25),
-                        ...journeys.map(
-                          (journey) => Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.symmetric(
-                              vertical: 6,
+                      ),
+                      const SizedBox(height: 28),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.96),
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(color: cardBorder),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 18,
+                              color: Colors.black12,
+                              offset: Offset(0, 6),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(15),
+                              decoration: BoxDecoration(
+                                color: blushPink,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.favorite_border,
+                                size: 34,
+                                color: rose,
+                              ),
                             ),
-                            child: RadioListTile<String>(
-                              value: journey,
-                              groupValue: selectedJourney,
-                              activeColor: const Color(0xFFE89CB0),
-                              title: Text(
-                                journey,
-                                style: const TextStyle(
-                                  fontSize: 16,
+                            const SizedBox(height: 18),
+                            const Text(
+                              'Which best describes your current healthcare journey?',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                height: 1.4,
+                                fontWeight: FontWeight.w700,
+                                color: forestGreen,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Choose the option that best fits your needs.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: warmText,
+                              ),
+                            ),
+                            const SizedBox(height: 22),
+                            ...journeys.map((journey) {
+                              final title = journey['title'] as String;
+                              final isSelected = selectedJourney == title;
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? blushPink.withValues(alpha: 0.65)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: isSelected ? rose : cardBorder,
+                                    width: isSelected ? 1.8 : 1,
+                                  ),
                                 ),
-                              ),
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedJourney = value;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 30),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 55,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE89CB0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            onPressed: () {
-                              // Make sure the user selected a journey.
-                              if (selectedJourney == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      "Please select your healthcare journey.",
+                                child: RadioListTile<String>(
+                                  value: title,
+                                  groupValue: selectedJourney,
+                                  activeColor: rose,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 5,
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.trailing,
+                                  secondary: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: blushPink,
+                                      borderRadius: BorderRadius.circular(13),
+                                    ),
+                                    child: Icon(
+                                      journey['icon'] as IconData,
+                                      color: rose,
+                                      size: 24,
                                     ),
                                   ),
-                                );
-
-                                return;
-                              }
-
-                              // Open the questions screen
-                              // and send the selected journey with it.
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => JourneyQuestionsScreen(
-                                    journey: selectedJourney!,
+                                  title: Text(
+                                    title,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: forestGreen,
+                                    ),
                                   ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 5),
+                                    child: Text(
+                                      journey['description'] as String,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        height: 1.4,
+                                        color: warmText,
+                                      ),
+                                    ),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      selectedJourney = value;
+                                    });
+                                  },
                                 ),
                               );
-                            },
-                            child: const Text(
-                              "Continue 🌸",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                            }),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 54,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: rose,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (selectedJourney == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please select your healthcare journey.',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          JourneyQuestionsScreen(
+                                        journey: selectedJourney!,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Continue',
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10),
+                                    Icon(Icons.arrow_forward, size: 20),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

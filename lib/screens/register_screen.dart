@@ -10,35 +10,27 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // ============================================================
-  // CONTROLLERS
-  // ============================================================
+  static const rose = Color(0xFFB04F6C);
+  static const blushPink = Color(0xFFF6DCE2);
+  static const forestGreen = Color(0xFF2F3A2A);
+  static const warmText = Color(0xFF5E5652);
+  static const cardBorder = Color(0xFFEADFDB);
+  static const sageGreen = Color(0xFF6E7B5F);
 
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController dobController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
-
-  final TextEditingController addressController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-
-  final TextEditingController emergencyNameController = TextEditingController();
-
-  final TextEditingController emergencyPhoneController =
-      TextEditingController();
-
-  final TextEditingController bloodController = TextEditingController();
-  final TextEditingController allergyController = TextEditingController();
-  final TextEditingController conditionController = TextEditingController();
-  final TextEditingController medicationController = TextEditingController();
-
-  // ============================================================
-  // DISPOSE
-  // ============================================================
+  final nameController = TextEditingController();
+  final dobController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final addressController = TextEditingController();
+  final cityController = TextEditingController();
+  final emergencyNameController = TextEditingController();
+  final emergencyPhoneController = TextEditingController();
+  final bloodController = TextEditingController();
+  final allergyController = TextEditingController();
+  final conditionController = TextEditingController();
+  final medicationController = TextEditingController();
 
   @override
   void dispose() {
@@ -46,27 +38,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     dobController.dispose();
     emailController.dispose();
     phoneController.dispose();
-
     passwordController.dispose();
     confirmPasswordController.dispose();
-
     addressController.dispose();
     cityController.dispose();
-
     emergencyNameController.dispose();
     emergencyPhoneController.dispose();
-
     bloodController.dispose();
     allergyController.dispose();
     conditionController.dispose();
     medicationController.dispose();
-
     super.dispose();
   }
-
-  // ============================================================
-  // NORMAL INPUT FIELD
-  // ============================================================
 
   Widget inputField(
     String label,
@@ -77,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     List<TextInputFormatter>? inputFormatters,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
         controller: controller,
         obscureText: password,
@@ -85,107 +68,80 @@ class _RegisterScreenState extends State<RegisterScreen> {
         inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(
-            icon,
-            color: const Color(0xFF959B7D),
-          ),
+          prefixIcon: Icon(icon, color: rose),
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
+            horizontal: 18,
             vertical: 18,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: cardBorder),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: cardBorder),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: const BorderSide(
-              color: Color(0xFFE89CB0),
-              width: 2,
-            ),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: rose, width: 2),
           ),
         ),
       ),
     );
   }
 
-  // ============================================================
-  // DATE OF BIRTH
-  // ============================================================
-
   Widget dateOfBirthField() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
         controller: dobController,
         readOnly: true,
         onTap: _selectDateOfBirth,
         decoration: InputDecoration(
-          labelText: "Date of Birth",
-          prefixIcon: const Icon(
-            Icons.calendar_today,
-            color: Color(0xFF959B7D),
-          ),
-          suffixIcon: const Icon(
-            Icons.arrow_drop_down,
-            color: Color(0xFF959B7D),
-          ),
+          labelText: 'Date of Birth',
+          prefixIcon: const Icon(Icons.calendar_today_outlined, color: rose),
+          suffixIcon: const Icon(Icons.arrow_drop_down, color: sageGreen),
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
+            horizontal: 18,
             vertical: 18,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: cardBorder),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: cardBorder),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: const BorderSide(
-              color: Color(0xFFE89CB0),
-              width: 2,
-            ),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: rose, width: 2),
           ),
         ),
       ),
     );
   }
 
-  // ============================================================
-  // DATE PICKER
-  // ============================================================
-
   Future<void> _selectDateOfBirth() async {
     final now = DateTime.now();
 
-    final DateTime? pickedDate = await showDatePicker(
+    final pickedDate = await showDatePicker(
       context: context,
-      initialDate: DateTime(
-        now.year - 18,
-        now.month,
-        now.day,
-      ),
+      initialDate: DateTime(now.year - 18, now.month, now.day),
       firstDate: DateTime(1900),
       lastDate: now,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFE89CB0),
+              primary: rose,
               onPrimary: Colors.white,
               surface: Colors.white,
-              onSurface: Color(0xFF959B7D),
+              onSurface: forestGreen,
             ),
           ),
           child: child!,
@@ -199,71 +155,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final year = pickedDate.year.toString();
 
       setState(() {
-        dobController.text = "$day/$month/$year";
+        dobController.text = '$day/$month/$year';
       });
     }
   }
 
-  // ============================================================
-  // BLOOD TYPE DROPDOWN
-  // ============================================================
-
   Widget bloodTypeField() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.only(bottom: 14),
       child: DropdownButtonFormField<String>(
         initialValue:
             bloodController.text.isEmpty ? null : bloodController.text,
         decoration: InputDecoration(
-          labelText: "Blood Type 🩸",
-          prefixIcon: const Icon(
-            Icons.bloodtype,
-            color: Color(0xFF959B7D),
-          ),
+          labelText: 'Blood Type',
+          prefixIcon: const Icon(Icons.bloodtype_outlined, color: rose),
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
+            horizontal: 18,
             vertical: 18,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(20),
-            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: cardBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: cardBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: rose, width: 2),
           ),
         ),
         items: const [
-          DropdownMenuItem(
-            value: "A+",
-            child: Text("A+"),
-          ),
-          DropdownMenuItem(
-            value: "A-",
-            child: Text("A-"),
-          ),
-          DropdownMenuItem(
-            value: "B+",
-            child: Text("B+"),
-          ),
-          DropdownMenuItem(
-            value: "B-",
-            child: Text("B-"),
-          ),
-          DropdownMenuItem(
-            value: "AB+",
-            child: Text("AB+"),
-          ),
-          DropdownMenuItem(
-            value: "AB-",
-            child: Text("AB-"),
-          ),
-          DropdownMenuItem(
-            value: "O+",
-            child: Text("O+"),
-          ),
-          DropdownMenuItem(
-            value: "O-",
-            child: Text("O-"),
-          ),
+          DropdownMenuItem(value: 'A+', child: Text('A+')),
+          DropdownMenuItem(value: 'A-', child: Text('A-')),
+          DropdownMenuItem(value: 'B+', child: Text('B+')),
+          DropdownMenuItem(value: 'B-', child: Text('B-')),
+          DropdownMenuItem(value: 'AB+', child: Text('AB+')),
+          DropdownMenuItem(value: 'AB-', child: Text('AB-')),
+          DropdownMenuItem(value: 'O+', child: Text('O+')),
+          DropdownMenuItem(value: 'O-', child: Text('O-')),
         ],
         onChanged: (value) {
           if (value != null) {
@@ -274,30 +207,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ============================================================
-  // SECTION TITLE
-  // ============================================================
-
-  Widget sectionTitle(String text) {
+  Widget sectionTitle(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(
-        top: 25,
-        bottom: 10,
-      ),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF959B7D),
-        ),
+      padding: const EdgeInsets.only(top: 24, bottom: 14),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: blushPink,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: rose, size: 23),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: forestGreen,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-
-  // ============================================================
-  // VALIDATE FORM
-  // ============================================================
 
   bool validateForm() {
     if (nameController.text.trim().isEmpty ||
@@ -306,37 +243,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
         phoneController.text.trim().isEmpty ||
         passwordController.text.isEmpty ||
         confirmPasswordController.text.isEmpty) {
-      _showMessage("Please complete all required personal information.");
+      _showMessage('Please complete all required personal information.');
       return false;
     }
 
     if (passwordController.text != confirmPasswordController.text) {
-      _showMessage("Passwords do not match.");
+      _showMessage('Passwords do not match.');
       return false;
     }
 
     if (passwordController.text.length < 8) {
-      _showMessage("Password must be at least 8 characters.");
+      _showMessage('Password must be at least 8 characters.');
       return false;
     }
 
-    if (!emailController.text.contains("@") ||
-        !emailController.text.contains(".")) {
-      _showMessage("Please enter a valid email address.");
+    if (!emailController.text.contains('@') ||
+        !emailController.text.contains('.')) {
+      _showMessage('Please enter a valid email address.');
       return false;
     }
 
     if (phoneController.text.length < 10) {
-      _showMessage("Please enter a valid phone number.");
+      _showMessage('Please enter a valid phone number.');
       return false;
     }
 
     return true;
   }
-
-  // ============================================================
-  // MESSAGE
-  // ============================================================
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -347,14 +280,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ============================================================
-  // CREATE ACCOUNT
-  // ============================================================
-
   void createAccount() {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     Navigator.push(
       context,
@@ -366,204 +293,164 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // ============================================================
-  // BUILD
-  // ============================================================
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // ========================================================
-          // BACKGROUND
-          // ========================================================
-
-          Image.asset(
-            'assets/images/backgrounds/background.jpeg',
-            fit: BoxFit.cover,
-            height: double.infinity,
-            width: double.infinity,
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/backgrounds/background.jpeg',
+              fit: BoxFit.cover,
+            ),
           ),
-
-          Container(
-            color: Colors.white.withValues(alpha: 0.25),
+          Positioned.fill(
+            child: Container(
+              color: Colors.white.withValues(alpha: 0.25),
+            ),
           ),
-
-          // ========================================================
-          // CONTENT
-          // ========================================================
-
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(25),
-              child: Column(
-                children: [
-                  // ==================================================
-                  // LOGO
-                  // ==================================================
-
-                  Image.asset(
-                    'assets/images/logo/logo.png',
-                    height: 100,
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  const Text(
-                    "Create Your Her Health Account 🌸",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF959B7D),
-                    ),
-                  ),
-
-                  // ==================================================
-                  // PERSONAL INFORMATION
-                  // ==================================================
-
-                  sectionTitle("👤 Personal Information"),
-
-                  inputField(
-                    "Full Name",
-                    Icons.person,
-                    nameController,
-                  ),
-
-                  // DATE PICKER
-                  dateOfBirthField(),
-
-                  // EMAIL
-                  inputField(
-                    "Email Address",
-                    Icons.email,
-                    emailController,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-
-                  // PHONE — NUMBERS ONLY
-                  inputField(
-                    "Phone Number",
-                    Icons.phone,
-                    phoneController,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(15),
-                    ],
-                  ),
-
-                  // PASSWORD
-                  inputField(
-                    "Password",
-                    Icons.lock,
-                    passwordController,
-                    password: true,
-                  ),
-
-                  // CONFIRM PASSWORD
-                  inputField(
-                    "Confirm Password",
-                    Icons.lock_outline,
-                    confirmPasswordController,
-                    password: true,
-                  ),
-
-                  // ==================================================
-                  // CONTACT INFORMATION
-                  // ==================================================
-
-                  sectionTitle("🏠 Contact Information"),
-
-                  inputField(
-                    "Street Address",
-                    Icons.home,
-                    addressController,
-                  ),
-
-                  inputField(
-                    "City",
-                    Icons.location_city,
-                    cityController,
-                  ),
-
-                  inputField(
-                    "Emergency Contact Name",
-                    Icons.contact_phone,
-                    emergencyNameController,
-                  ),
-
-                  // EMERGENCY PHONE — NUMBERS ONLY
-                  inputField(
-                    "Emergency Contact Number",
-                    Icons.phone_in_talk,
-                    emergencyPhoneController,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(15),
-                    ],
-                  ),
-
-                  // ==================================================
-                  // HEALTH INFORMATION
-                  // ==================================================
-
-                  sectionTitle("❤️ Health Information"),
-
-                  // BLOOD TYPE — DROPDOWN
-                  bloodTypeField(),
-
-                  inputField(
-                    "Allergies ⚠️",
-                    Icons.warning,
-                    allergyController,
-                  ),
-
-                  inputField(
-                    "Medical Conditions",
-                    Icons.medical_information,
-                    conditionController,
-                  ),
-
-                  inputField(
-                    "Current Medication 💊",
-                    Icons.medication,
-                    medicationController,
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // ==================================================
-                  // CREATE ACCOUNT BUTTON
-                  // ==================================================
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE89CB0),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 8),
+                      Center(
+                        child: Image.asset(
+                          'assets/images/logo/logo.png',
+                          height: 100,
                         ),
                       ),
-                      onPressed: createAccount,
-                      child: const Text(
-                        "Create Account 🌸",
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Create Your Account',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: forestGreen,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Join Her Health and take charge of your wellness.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 15, color: warmText),
+                      ),
+                      sectionTitle(
+                        'Personal Information',
+                        Icons.person_outline,
+                      ),
+                      inputField(
+                          'Full Name', Icons.person_outline, nameController),
+                      dateOfBirthField(),
+                      inputField(
+                        'Email Address',
+                        Icons.email_outlined,
+                        emailController,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      inputField(
+                        'Phone Number',
+                        Icons.phone_outlined,
+                        phoneController,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(15),
+                        ],
+                      ),
+                      inputField(
+                        'Password',
+                        Icons.lock_outline,
+                        passwordController,
+                        password: true,
+                      ),
+                      inputField(
+                        'Confirm Password',
+                        Icons.lock_reset_outlined,
+                        confirmPasswordController,
+                        password: true,
+                      ),
+                      sectionTitle(
+                        'Contact Information',
+                        Icons.location_on_outlined,
+                      ),
+                      inputField(
+                        'Street Address',
+                        Icons.home_outlined,
+                        addressController,
+                      ),
+                      inputField(
+                        'City',
+                        Icons.location_city_outlined,
+                        cityController,
+                      ),
+                      inputField(
+                        'Emergency Contact Name',
+                        Icons.contact_phone_outlined,
+                        emergencyNameController,
+                      ),
+                      inputField(
+                        'Emergency Contact Number',
+                        Icons.phone_in_talk_outlined,
+                        emergencyPhoneController,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(15),
+                        ],
+                      ),
+                      sectionTitle(
+                        'Health Information',
+                        Icons.health_and_safety_outlined,
+                      ),
+                      bloodTypeField(),
+                      inputField(
+                        'Allergies',
+                        Icons.warning_amber_outlined,
+                        allergyController,
+                      ),
+                      inputField(
+                        'Medical Conditions',
+                        Icons.medical_information_outlined,
+                        conditionController,
+                      ),
+                      inputField(
+                        'Current Medication',
+                        Icons.medication_outlined,
+                        medicationController,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 56,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: rose,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: createAccount,
+                          child: const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
-
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
             ),
           ),

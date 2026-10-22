@@ -11,193 +11,249 @@ class PrivacyConsentScreen extends StatefulWidget {
 class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
   bool consentGiven = false;
 
+  static const Color rose = Color(0xFFB04F6C);
+  static const Color lightRose = Color(0xFFD9879E);
+  static const Color blush = Color(0xFFF6DCE2);
+  static const Color sage = Color(0xFF6E7B5F);
+  static const Color forestGreen = Color(0xFF2F3A2A);
+  static const Color bodyText = Color(0xFF5E5652);
+  static const Color borderColor = Color(0xFFEADFDB);
+
+  void continueToHealthSetup() {
+    if (!consentGiven) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const HealthSetupScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background
+          // Existing background image.
           Image.asset(
             'assets/images/backgrounds/background.jpeg',
             fit: BoxFit.cover,
           ),
 
-          // Soft overlay
+          // Soft overlay for readability.
           Container(
-            color: Colors.white.withValues(alpha: 0.25),
+            color: Colors.white.withValues(alpha: 0.48),
           ),
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(25),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 22,
+                vertical: 20,
+              ),
               child: Column(
                 children: [
-                  const SizedBox(height: 20),
-
-                  // Logo
+                  // Existing Her Health logo.
                   Image.asset(
                     'assets/images/logo/logo.png',
-                    height: 110,
+                    height: 105,
                   ),
 
                   const SizedBox(height: 20),
 
                   const Text(
-                    "Your Privacy Matters 🔐",
+                    'Your Privacy Matters',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF959B7D),
+                      color: forestGreen,
                     ),
                   ),
 
                   const SizedBox(height: 12),
 
                   const Text(
-                    "Before you continue, please read how Her Health "
-                    "will handle your personal and health information.",
+                    'Before you continue, learn how Her Health '
+                    'plans to handle your personal and health '
+                    'information.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 17,
-                      color: Color(0xFF959B7D),
+                      fontSize: 15,
+                      height: 1.5,
+                      color: bodyText,
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 25),
 
-                  // Privacy information card
+                  // Main privacy card.
                   Container(
-                    padding: const EdgeInsets.all(25),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.94),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: const [
+                      color: Colors.white.withValues(alpha: 0.96),
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                        color: borderColor,
+                      ),
+                      boxShadow: [
                         BoxShadow(
-                          blurRadius: 15,
-                          color: Colors.black12,
-                          offset: Offset(0, 5),
+                          color: rose.withValues(alpha: 0.08),
+                          blurRadius: 22,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Center(
-                          child: Icon(
-                            Icons.lock_outline,
-                            size: 65,
-                            color: Color(0xFFE89CB0),
+                        Center(
+                          child: Container(
+                            width: 72,
+                            height: 72,
+                            decoration: const BoxDecoration(
+                              color: blush,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.shield_outlined,
+                              size: 36,
+                              color: rose,
+                            ),
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 22),
 
                         const Text(
-                          "How we use your information",
+                          'How we use your information',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 21,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF959B7D),
+                            color: forestGreen,
                           ),
                         ),
 
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 12),
 
                         const Text(
-                          "Her Health may ask for personal and health "
-                          "information so that we can provide a more "
-                          "personalised healthcare experience.",
+                          'Her Health may ask for personal and '
+                          'health information to support a more '
+                          'personalised healthcare experience.',
                           style: TextStyle(
-                            fontSize: 16,
-                            height: 1.5,
-                            color: Colors.black87,
+                            fontSize: 15,
+                            height: 1.6,
+                            color: bodyText,
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 25),
 
                         privacyItem(
-                          Icons.health_and_safety,
-                          "Health information",
-                          "Information about your health, symptoms, "
-                              "healthcare journey and other information "
-                              "you choose to provide.",
+                          Icons.health_and_safety_outlined,
+                          'Health information',
+                          'Details about your health, symptoms, '
+                              'healthcare journey and other information '
+                              'you choose to provide.',
                         ),
 
                         privacyItem(
                           Icons.person_outline,
-                          "Personal information",
-                          "Information such as your name and other "
-                              "details needed to provide the service.",
+                          'Personal information',
+                          'Your name and other details needed to '
+                              'provide the service.',
                         ),
 
                         privacyItem(
                           Icons.smart_toy_outlined,
-                          "AI personalisation",
-                          "Information you provide may be used to help "
-                              "Her Health AI give responses that are more "
-                              "relevant to your healthcare journey.",
+                          'AI personalisation',
+                          'Information you provide may help Her Health '
+                              'AI tailor its responses to your '
+                              'healthcare journey.',
                         ),
 
                         privacyItem(
-                          Icons.security,
-                          "Protecting your information",
-                          "Your information should be protected using "
-                              "appropriate security measures and access "
-                              "controls.",
+                          Icons.security_outlined,
+                          'Protecting your information',
+                          'Appropriate security measures and access '
+                              'controls should be used to help protect '
+                              'your information.',
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 5),
 
-                        const Divider(),
+                        const Divider(
+                          color: borderColor,
+                          height: 30,
+                        ),
 
-                        const SizedBox(height: 10),
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.gavel_outlined,
+                              color: sage,
+                              size: 24,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'POPIA',
+                              style: TextStyle(
+                                fontSize: 21,
+                                fontWeight: FontWeight.bold,
+                                color: forestGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 12),
 
                         const Text(
-                          "POPIA",
+                          'The Protection of Personal Information '
+                          'Act (POPIA) governs how personal information '
+                          'is processed in South Africa. Her Health '
+                          'is being designed with privacy in mind. '
+                          'The responsible organisation must confirm '
+                          'the final privacy notice, storage practices, '
+                          'retention periods and applicable legal '
+                          'requirements.',
                           style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF959B7D),
+                            fontSize: 14,
+                            height: 1.6,
+                            color: bodyText,
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 22),
 
-                        const Text(
-                          "Her Health is designed with privacy and the "
-                          "Protection of Personal Information Act (POPIA) "
-                          "in mind. The final privacy notice, storage "
-                          "location, retention period and other legal "
-                          "requirements will be confirmed by the "
-                          "organisation responsible for the application.",
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 1.5,
-                            color: Colors.black87,
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Consent checkbox
+                        // Consent checkbox.
                         Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF8F5F6),
+                            color: const Color(0xFFFAF6F3),
                             borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: borderColor,
+                            ),
                           ),
                           child: CheckboxListTile(
                             value: consentGiven,
-                            activeColor: const Color(0xFFE89CB0),
+                            activeColor: rose,
+                            checkColor: Colors.white,
                             controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             title: const Text(
-                              "I have read and understand the privacy "
-                              "information above.",
+                              'I have read and understand the '
+                              'privacy information above.',
                               style: TextStyle(
-                                fontSize: 15,
-                                height: 1.4,
+                                fontSize: 14,
+                                height: 1.5,
+                                color: forestGreen,
                               ),
                             ),
                             onChanged: (value) {
@@ -208,39 +264,41 @@ class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 25),
+                        const SizedBox(height: 24),
 
-                        // Continue button
+                        // Continue button.
                         SizedBox(
                           width: double.infinity,
-                          height: 55,
+                          height: 54,
                           child: ElevatedButton(
+                            onPressed:
+                                consentGiven ? continueToHealthSetup : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: consentGiven
-                                  ? const Color(0xFFE89CB0)
-                                  : Colors.grey.shade400,
+                              backgroundColor: rose,
+                              disabledBackgroundColor: Colors.grey.shade300,
                               foregroundColor: Colors.white,
+                              disabledForegroundColor: Colors.white70,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                            onPressed: consentGiven
-                                ? () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const HealthSetupScreen(),
-                                      ),
-                                    );
-                                  }
-                                : null,
-                            child: const Text(
-                              "Continue 🌸",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Continue',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 20,
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -250,17 +308,26 @@ class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
 
                   const SizedBox(height: 20),
 
+                  const Icon(
+                    Icons.favorite_border,
+                    color: sage,
+                    size: 20,
+                  ),
+
+                  const SizedBox(height: 8),
+
                   const Text(
-                    "Your privacy is important to us. "
-                    "Please only provide information you are comfortable sharing.",
+                    'Your privacy matters. Only share information '
+                    'you feel comfortable providing.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF959B7D),
+                      fontSize: 12,
+                      height: 1.5,
+                      color: bodyText,
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
                 ],
               ),
             ),
@@ -276,23 +343,24 @@ class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
     String description,
   ) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 22),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 45,
-            width: 45,
+            height: 46,
+            width: 46,
             decoration: BoxDecoration(
-              color: const Color(0xFFFBECEF),
-              borderRadius: BorderRadius.circular(14),
+              color: blush,
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFFE89CB0),
+              color: rose,
+              size: 24,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,18 +368,18 @@ class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
+                    color: forestGreen,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 6),
                 Text(
                   description,
                   style: const TextStyle(
                     fontSize: 14,
-                    height: 1.4,
-                    color: Colors.black87,
+                    height: 1.5,
+                    color: bodyText,
                   ),
                 ),
               ],

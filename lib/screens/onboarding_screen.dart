@@ -6,171 +6,185 @@ import 'information_screen.dart';
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
+  static const Color rose = Color(0xFFB04F6C);
+  static const Color blushPink = Color(0xFFF6DCE2);
+  static const Color forestGreen = Color(0xFF2F3A2A);
+  static const Color warmText = Color(0xFF5E5652);
+  static const Color cardBorder = Color(0xFFEADFDB);
+  static const Color sageGreen = Color(0xFF6E7B5F);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Image (Clear - No Blur)
+          // Keep the existing background.
           Image.asset(
             'assets/images/backgrounds/background.jpeg',
             fit: BoxFit.cover,
           ),
 
-          // Soft overlay
+          // Keep the existing soft overlay.
           Container(
             color: Colors.white.withValues(alpha: 0.30),
           ),
 
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(25),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo
-
-                  Image.asset(
-                    'assets/images/logo/logo.png',
-                    height: 150,
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  const Text(
-                    "Her Health",
-                    style: TextStyle(
-                      fontSize: 42,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF959B7D),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  const Text(
-                    "Your personal health companion",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF959B7D),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  // Information Cards
-
-                  buildInfoCard(
-                    icon: "🤖",
-                    title: "AI Health Companion",
-                    description:
-                        "Get trusted health information, receive personalised guidance, and ask questions anytime.",
-                  ),
-
-                  buildInfoCard(
-                    icon: "❤️",
-                    title: "Track Your Health",
-                    description:
-                        "Monitor your menstrual cycle, pregnancy, symptoms, and appointments in one place.",
-                  ),
-
-                  buildInfoCard(
-                    icon: "👩‍⚕️",
-                    title: "Stay Connected",
-                    description:
-                        "Request appointments, receive reminders, and keep your health journey organised.",
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // Register Button
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE89CB0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(25),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 550),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/images/logo/logo.png',
+                        height: 140,
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Create Account 🌸",
+
+                      const SizedBox(height: 20),
+
+                      const Text(
+                        'Her Health',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 38,
+                          fontWeight: FontWeight.w800,
+                          color: forestGreen,
                         ),
                       ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 15),
+                      const SizedBox(height: 10),
 
-                  // Login Button
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF959B7D),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        "Login 🌿",
+                      const Text(
+                        'Your personal health companion',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: warmText,
                         ),
                       ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 15),
+                      const SizedBox(height: 28),
 
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const InformationScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Learn More About Her Health 📖",
-                      style: TextStyle(
-                        color: Color(0xFF959B7D),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      buildInfoCard(
+                        icon: Icons.auto_awesome_outlined,
+                        title: 'AI Health Companion',
+                        description:
+                            'Get trusted health information, receive personalised guidance, and ask questions anytime.',
                       ),
-                    ),
+
+                      buildInfoCard(
+                        icon: Icons.favorite_border,
+                        title: 'Track Your Health',
+                        description:
+                            'Monitor your menstrual cycle, pregnancy, symptoms, and appointments in one place.',
+                      ),
+
+                      buildInfoCard(
+                        icon: Icons.medical_services_outlined,
+                        title: 'Stay Connected',
+                        description:
+                            'Request appointments, receive reminders, and keep your health journey organised.',
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Create account button.
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: rose,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const RegisterScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // Outlined login button.
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: rose,
+                            side: const BorderSide(
+                              color: rose,
+                              width: 2,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Log In',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const InformationScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.menu_book_outlined,
+                          color: sageGreen,
+                        ),
+                        label: const Text(
+                          'Learn More About Her Health',
+                          style: TextStyle(
+                            color: sageGreen,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -180,23 +194,36 @@ class OnboardingScreen extends StatelessWidget {
   }
 
   Widget buildInfoCard({
-    required String icon,
+    required IconData icon,
     required String title,
     required String description,
   }) {
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: cardBorder,
+          width: 1.5,
+        ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            icon,
-            style: const TextStyle(
-              fontSize: 35,
+          Container(
+            width: 54,
+            height: 54,
+            decoration: const BoxDecoration(
+              color: blushPink,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: rose,
+              size: 27,
             ),
           ),
           const SizedBox(width: 15),
@@ -208,16 +235,17 @@ class OnboardingScreen extends StatelessWidget {
                   title,
                   style: const TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF959B7D),
+                    fontWeight: FontWeight.w700,
+                    color: forestGreen,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 6),
                 Text(
                   description,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Colors.black87,
+                    height: 1.4,
+                    color: warmText,
                   ),
                 ),
               ],
