@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+
 import '../services/api_service.dart';
-import 'dashboard_screen.dart';
+import '../services/passkey_service.dart';
 import '../theme/design_a.dart';
+import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,9 +17,37 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _deviceLoading = false;
+  bool _deviceUnlockAvailable = false;
+
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkDeviceUnlock();
+  }
+
+  Future<void> _checkDeviceUnlock() async {
+    try {
+      final available = await PasskeyService.isAvailable();
+
+      if (!mounted) return;
+
+      setState(() {
+        _deviceUnlockAvailable = available;
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _deviceUnlockAvailable = false;
+      });
+    }
+  }
 
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
@@ -48,6 +80,81 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    _openDashboard();
+  }
+
+  Future<void> _handleDeviceUnlock() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = 'Enter your staff email first, then use device unlock.';
+      });
+      return;
+    }
+
+    if (!_deviceUnlockAvailable) {
+      setState(() {
+        _errorMessage =
+            'Device unlock is not available on this device or browser.';
+      });
+      return;
+    }
+
+    setState(() {
+      _deviceLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final options = await ApiService.beginPasskeyLogin(email: email);
+
+      final credentialJson = await PasskeyService.authenticate(
+        jsonEncode(options),
+      );
+
+      final decoded = jsonDecode(credentialJson);
+
+      if (decoded is! Map) {
+        throw Exception('The device returned an invalid credential.');
+      }
+
+      final error = await ApiService.finishPasskeyLogin(
+        email: email,
+        credential: Map<String, dynamic>.from(decoded),
+      );
+
+      if (!mounted) return;
+
+      if (error != null) {
+        setState(() {
+          _errorMessage = error;
+        });
+        return;
+      }
+
+      _openDashboard();
+    } catch (e) {
+      if (!mounted) return;
+
+      final message = e.toString().toLowerCase();
+
+      setState(() {
+        _errorMessage =
+            message.contains('notallowed') || message.contains('cancel')
+            ? 'Device unlock was cancelled.'
+            : 'Device unlock failed. You can still use your password.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _deviceLoading = false;
+        });
+      }
+    }
+  }
+
+  void _openDashboard() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const DashboardScreen()),
@@ -63,6 +170,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final busy = _isLoading || _deviceLoading;
+
     return Scaffold(
       backgroundColor: DA.ground,
       body: SafeArea(
@@ -85,21 +194,36 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Image.asset(
-                  'assets/images/logo/logo.png',
-                  height: 44,
-                  errorBuilder: (_, __, ___) => Icon(Icons.spa, size: 44, color: DA.rose),
-                ),
+                        'assets/images/logo/logo.png',
+                        height: 44,
+                        errorBuilder: (_, _, _) =>
+                            const Icon(Icons.spa, size: 44, color: DA.rose),
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 20),
-                  Text('Admin portal', style: DA.body(15, color: DA.sage, weight: FontWeight.w700)),
+
+                  Text(
+                    'Admin portal',
+                    style: DA.body(15, color: DA.sage, weight: FontWeight.w700),
+                  ),
+
                   const SizedBox(height: 4),
+
                   Text('Log in', style: DA.heading(32)),
+
                   const SizedBox(height: 8),
-                  Text('For practice staff only.', style: DA.body(16, color: DA.muted)),
+
+                  Text(
+                    'For practice staff only.',
+                    style: DA.body(16, color: DA.muted),
+                  ),
+
                   const SizedBox(height: 32),
 
                   DA.label('Email address'),
+
                   TextField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -107,9 +231,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: DA.body(16),
                     decoration: DA.input(),
                   ),
+
                   const SizedBox(height: 18),
 
                   DA.label('Password'),
+
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -117,7 +243,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: DA.body(16),
                     decoration: DA.input(
                       suffix: IconButton(
-                        tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                        tooltip: _obscurePassword
+                            ? 'Show password'
+                            : 'Hide password',
                         icon: Icon(
                           _obscurePassword
                               ? Icons.visibility_outlined
@@ -131,7 +259,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
-                    onSubmitted: (_) => _handleLogin(),
+                    onSubmitted: (_) {
+                      if (!busy) {
+                        _handleLogin();
+                      }
+                    },
                   ),
 
                   if (_errorMessage != null) ...[
@@ -144,17 +276,70 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       child: Text(
                         _errorMessage!,
-                        style: DA.body(14, color: DA.rejectedInk, weight: FontWeight.w600),
+                        style: DA.body(
+                          14,
+                          color: DA.rejectedInk,
+                          weight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
 
                   const SizedBox(height: 28),
+
                   ElevatedButton(
                     style: DA.primary(),
-                    onPressed: _isLoading ? null : _handleLogin,
+                    onPressed: busy ? null : _handleLogin,
                     child: _isLoading ? DA.buttonSpinner : const Text('Log in'),
                   ),
+
+                  if (_deviceUnlockAvailable) ...[
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        const Expanded(child: Divider(color: DA.divider)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Text(
+                            'or',
+                            style: DA.body(14, color: DA.quiet),
+                          ),
+                        ),
+                        const Expanded(child: Divider(color: DA.divider)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    OutlinedButton.icon(
+                      style: DA.outline(),
+                      onPressed: busy ? null : _handleDeviceUnlock,
+                      icon: _deviceLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: DA.rose,
+                              ),
+                            )
+                          : const Icon(Icons.fingerprint_rounded),
+                      label: Text(
+                        _deviceLoading
+                            ? 'Checking device...'
+                            : 'Use device unlock',
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Use Touch ID, Face ID, fingerprint or your device unlock method.',
+                      textAlign: TextAlign.center,
+                      style: DA.body(12, color: DA.quiet),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -1,12 +1,15 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
+
 import '../services/api_service.dart';
+import '../services/passkey_service.dart';
 import '../theme/design_a.dart';
-import 'login_screen.dart';
-import 'patients_screen.dart';
-import 'messages_inbox_screen.dart';
 import 'articles_manage_screen.dart';
 import 'billing_screen.dart';
+import 'login_screen.dart';
+import 'messages_inbox_screen.dart';
+import 'patients_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,6 +20,8 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
+  bool _deviceUnlockBusy = false;
+
   String? _errorMessage;
   List<dynamic> _appointments = [];
 
@@ -42,18 +47,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (response.statusCode != 200) {
         setState(() {
-          _errorMessage = 'Failed to load appointments (${response.statusCode}).';
+          _errorMessage =
+              'Failed to load appointments (${response.statusCode}).';
           _isLoading = false;
         });
         return;
       }
 
       final data = jsonDecode(response.body) as List<dynamic>;
+
       setState(() {
         _appointments = data;
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
       setState(() {
         _errorMessage = 'Could not reach the server.';
         _isLoading = false;
@@ -61,9 +68,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _enableDeviceUnlock() async {
+    if (_deviceUnlockBusy) return;
+
+    setState(() {
+      _deviceUnlockBusy = true;
+    });
+
+    try {
+      final available = await PasskeyService.isAvailable();
+
+      if (!available) {
+        if (!mounted) return;
+
+        _showMessage(
+          'Device unlock is not available on this device or browser.',
+          error: true,
+        );
+        return;
+      }
+
+      final options = await ApiService.beginPasskeyRegistration();
+
+      final credentialJson = await PasskeyService.register(jsonEncode(options));
+
+      final decoded = jsonDecode(credentialJson);
+
+      if (decoded is! Map) {
+        throw Exception('The device returned an invalid credential.');
+      }
+
+      await ApiService.finishPasskeyRegistration(
+        credential: Map<String, dynamic>.from(decoded),
+        deviceName: 'Admin device',
+      );
+
+      if (!mounted) return;
+
+      _showMessage('Device unlock enabled successfully.');
+    } catch (e) {
+      if (!mounted) return;
+
+      final message = e.toString().toLowerCase();
+
+      if (message.contains('notallowed') || message.contains('cancel')) {
+        _showMessage('Device unlock setup was cancelled.', error: true);
+      } else {
+        _showMessage('Could not enable device unlock.', error: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _deviceUnlockBusy = false;
+        });
+      }
+    }
+  }
+
+  void _showMessage(String message, {bool error = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? Colors.red.shade400 : null,
+      ),
+    );
+  }
+
   Future<void> _handleSessionExpired() async {
     await ApiService.logout();
+
     if (!mounted) return;
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -81,40 +156,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (response.statusCode == 200) {
       _loadAppointments();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to update appointment (${response.statusCode}).')),
+      _showMessage(
+        'Failed to update appointment (${response.statusCode}).',
+        error: true,
       );
     }
   }
 
   Future<void> _logout() async {
     await ApiService.logout();
+
     if (!mounted) return;
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
     );
   }
 
-  static const _months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-  /// "2026-12-15" + "09:00:00" -> "Tue 15 Dec 2026 · 09:00"
   String _when(String date, String time) {
     final d = DateTime.tryParse(date);
+
     final t = time.length >= 5 ? time.substring(0, 5) : time;
-    if (d == null) return '$date · $t';
-    return '${_weekdays[d.weekday - 1]} ${d.day} ${_months[d.month - 1]} ${d.year} · $t';
+
+    if (d == null) {
+      return '$date · $t';
+    }
+
+    return '${_weekdays[d.weekday - 1]} '
+        '${d.day} ${_months[d.month - 1]} '
+        '${d.year} · $t';
   }
 
-  /// Badge colours: colour AND word differ, so status reads without colour.
   (Color, Color) _badge(String status) {
     switch (status) {
       case 'approved':
         return (DA.approvedBg, DA.approvedInk);
+
       case 'rejected':
       case 'cancelled':
         return (DA.rejectedBg, DA.rejectedInk);
+
       default:
         return (DA.pendingBg, DA.pendingInk);
     }
@@ -129,18 +228,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
         showBack: false,
         titleWidget: Row(
           children: [
-            Image.asset('assets/images/logo/logo.png', height: 32,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+            Image.asset(
+              'assets/images/logo/logo.png',
+              height: 32,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+
             const SizedBox(width: 10),
+
             Text('Her Health', style: DA.heading(20)),
+
             const SizedBox(width: 10),
+
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: DA.blush,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text('Admin', style: DA.body(12, color: DA.rejectedInk, weight: FontWeight.w700)),
+              child: Text(
+                'Admin',
+                style: DA.body(
+                  12,
+                  color: DA.rejectedInk,
+                  weight: FontWeight.w700,
+                ),
+              ),
             ),
           ],
         ),
@@ -151,25 +264,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
               MaterialPageRoute(builder: (context) => const PatientsScreen()),
             );
           }),
+
           DA.barLink(Icons.mail_outline_rounded, 'Messages', () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const MessagesInboxScreen()),
+              MaterialPageRoute(
+                builder: (context) => const MessagesInboxScreen(),
+              ),
             );
           }),
+
           DA.barLink(Icons.article_outlined, 'Articles', () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ArticlesManageScreen()),
+              MaterialPageRoute(
+                builder: (context) => const ArticlesManageScreen(),
+              ),
             );
           }),
+
           DA.barLink(Icons.receipt_long_outlined, 'Billing', () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const BillingScreen()),
             );
           }),
+
           const SizedBox(width: 8),
+
+          OutlinedButton.icon(
+            style: DA.outline().copyWith(
+              minimumSize: const WidgetStatePropertyAll(Size(170, 44)),
+            ),
+            onPressed: _deviceUnlockBusy ? null : _enableDeviceUnlock,
+            icon: _deviceUnlockBusy
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: DA.rose,
+                    ),
+                  )
+                : const Icon(Icons.fingerprint_rounded),
+            label: Text(_deviceUnlockBusy ? 'Enabling...' : 'Device unlock'),
+          ),
+
+          const SizedBox(width: 8),
+
           OutlinedButton(
             style: DA.outline().copyWith(
               minimumSize: const WidgetStatePropertyAll(Size(100, 44)),
@@ -188,7 +330,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _header() {
-    final pending = _appointments.where((a) => (a as Map<String, dynamic>)['status'] == 'pending').length;
+    final pending = _appointments
+        .where((a) => (a as Map<String, dynamic>)['status'] == 'pending')
+        .length;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -217,12 +362,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
         padding: const EdgeInsets.all(32),
         children: [
           const SizedBox(height: 60),
+
           Text(
             _errorMessage!,
             textAlign: TextAlign.center,
             style: DA.body(15, color: DA.rejectedInk),
           ),
+
           const SizedBox(height: 16),
+
           Center(
             child: OutlinedButton(
               style: DA.outline().copyWith(
@@ -244,6 +392,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _header(),
+
               if (_appointments.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(32),
@@ -254,7 +403,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     style: DA.body(16, color: DA.muted),
                   ),
                 ),
-              ..._appointments.map((a) => _appointmentCard(a as Map<String, dynamic>)),
+
+              ..._appointments.map(
+                (a) => _appointmentCard(a as Map<String, dynamic>),
+              ),
             ],
           ),
         ),
@@ -264,11 +416,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _appointmentCard(Map<String, dynamic> appointment) {
     final status = appointment['status'] as String? ?? 'pending';
+
     final firstName = appointment['first_name'] as String? ?? '';
+
     final lastName = appointment['last_name'] as String? ?? '';
+
     final date = appointment['requested_date'] as String? ?? '';
+
     final time = appointment['requested_time'] as String? ?? '';
+
     final reason = appointment['reason'] as String?;
+
     final (badgeBg, badgeInk) = _badge(status);
 
     return Container(
@@ -288,7 +446,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DA.initials(firstName, lastName),
+
                 const SizedBox(width: 14),
+
                 Flexible(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,22 +462,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               style: DA.body(17, weight: FontWeight.w700),
                             ),
                           ),
+
                           const SizedBox(width: 10),
+
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: badgeBg,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              status.isEmpty ? status : status[0].toUpperCase() + status.substring(1),
-                              style: DA.body(12, color: badgeInk, weight: FontWeight.w700),
+                              status.isEmpty
+                                  ? status
+                                  : status[0].toUpperCase() +
+                                        status.substring(1),
+                              style: DA.body(
+                                12,
+                                color: badgeInk,
+                                weight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ],
                       ),
+
                       const SizedBox(height: 4),
-                      Text(_when(date, time), style: DA.body(15, color: DA.muted)),
+
+                      Text(
+                        _when(date, time),
+                        style: DA.body(15, color: DA.muted),
+                      ),
+
                       if (reason != null && reason.isNotEmpty) ...[
                         const SizedBox(height: 2),
                         Text(reason, style: DA.body(15, color: DA.quiet)),
@@ -328,6 +506,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ],
             ),
           ),
+
           if (status == 'pending')
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -340,10 +519,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     shape: const StadiumBorder(),
                     textStyle: DA.body(15, weight: FontWeight.w700),
                   ),
-                  onPressed: () => _updateStatus(appointment['id'] as int, 'rejected'),
+                  onPressed: () =>
+                      _updateStatus(appointment['id'] as int, 'rejected'),
                   child: const Text('Reject'),
                 ),
+
                 const SizedBox(width: 10),
+
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: DA.sage,
@@ -353,7 +535,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     shape: const StadiumBorder(),
                     textStyle: DA.body(15, weight: FontWeight.w700),
                   ),
-                  onPressed: () => _updateStatus(appointment['id'] as int, 'approved'),
+                  onPressed: () =>
+                      _updateStatus(appointment['id'] as int, 'approved'),
                   child: const Text('Approve'),
                 ),
               ],

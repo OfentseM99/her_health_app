@@ -13,6 +13,7 @@ from routers.messages import router as messages_router
 from routers.reminders import router as reminders_router
 from routers.articles import router as articles_router
 from routers.billing import router as billing_router
+from routers.passkeys import router as passkeys_router
 
 
 app = FastAPI(
@@ -39,6 +40,7 @@ app.include_router(messages_router)
 app.include_router(reminders_router)
 app.include_router(articles_router)
 app.include_router(billing_router)
+app.include_router(passkeys_router)
 
 @app.get("/")
 def root():

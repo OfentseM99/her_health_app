@@ -253,33 +253,40 @@ def register_user(user: RegisterRequest):
         # RETURNING is PostgreSQL syntax (MySQL would use cursor.lastrowid).
         new_user_id = cursor.fetchone()["id"]
 
+        # Every patient account must have a matching row in patients.
+        # Older code only created the profile when full_name was supplied,
+        # which left some valid user accounts without a patient profile.
         if user.full_name and user.full_name.strip():
             first_name, last_name = _split_name(user.full_name)
-            cursor.execute(
-                """
-                INSERT INTO patients
-                (user_id, first_name, last_name, phone, date_of_birth,
-                 emergency_contact_name, emergency_contact_phone,
-                 address, city, blood_type,
-                 allergies, medical_conditions, current_medications)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (
-                    new_user_id,
-                    first_name,
-                    last_name,
-                    user.phone,
-                    user.date_of_birth,
-                    user.emergency_contact_name,
-                    user.emergency_contact_phone,
-                    user.address,
-                    user.city,
-                    user.blood_type,
-                    Json(user.allergies) if user.allergies is not None else None,
-                    Json(user.medical_conditions) if user.medical_conditions is not None else None,
-                    Json(user.current_medications) if user.current_medications is not None else None,
-                )
+        else:
+            first_name = "Patient"
+            last_name = ""
+
+        cursor.execute(
+            """
+            INSERT INTO patients
+            (user_id, first_name, last_name, phone, date_of_birth,
+             emergency_contact_name, emergency_contact_phone,
+             address, city, blood_type,
+             allergies, medical_conditions, current_medications)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                new_user_id,
+                first_name,
+                last_name,
+                user.phone,
+                user.date_of_birth,
+                user.emergency_contact_name,
+                user.emergency_contact_phone,
+                user.address,
+                user.city,
+                user.blood_type,
+                Json(user.allergies) if user.allergies is not None else None,
+                Json(user.medical_conditions) if user.medical_conditions is not None else None,
+                Json(user.current_medications) if user.current_medications is not None else None,
             )
+        )
 
         # One commit for both inserts: the account and its profile are
         # created together or not at all.
