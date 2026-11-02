@@ -16,7 +16,7 @@ class HealthJourneyScreen extends StatelessWidget {
       'title': 'Pregnancy Care',
       'description': 'Support and guidance throughout your pregnancy.',
       'icon': Icons.pregnant_woman_outlined,
-      'emoji': '🤰',
+      'emoji': '',
     },
     {
       'title': 'Menstrual Health',

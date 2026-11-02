@@ -320,16 +320,10 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
     );
   }
 
-  // Remove common emoji prefixes from the displayed title.
+  // Remove the pregnancy emoji prefix from the displayed title.
   String get displayJourney {
-    return widget.journey
-        .replaceAll('🤰 ', '')
-        .replaceAll('🌸 ', '')
-        .replaceAll('👶 ', '')
-        .replaceAll('💚 ', '')
-        .replaceAll('✨ ', '');
+    return widget.journey.replaceFirst(RegExp(r'^🤰\s*'), '');
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

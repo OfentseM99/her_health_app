@@ -436,6 +436,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             const SizedBox(height: 12),
             drawerItem(
               context,
+              Icons.dashboard_outlined,
+              'Dashboard',
+              routeName: '/dashboard',
+            ),
+            drawerItem(
+              context,
               Icons.chat_bubble_outline,
               'AI Assistant',
               selected: true,
@@ -443,6 +449,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             drawerItem(
               context,
               Icons.calendar_month_outlined,
+              'Period Tracker',
+              routeName: '/period-tracker',
+            ),
+            drawerItem(
+              context,
+              Icons.calendar_today_outlined,
               'Appointments',
             ),
             drawerItem(
@@ -452,8 +464,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
             drawerItem(
               context,
-              Icons.favorite_border,
-              'Health Profile',
+              Icons.person_outline,
+              'Personal Information',
+              routeName: '/profile',
             ),
             drawerItem(
               context,
@@ -493,6 +506,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     IconData icon,
     String title, {
     bool selected = false,
+    String? routeName,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -517,9 +531,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ),
         ),
         onTap: () {
-          // These drawer destinations are not connected yet.
-          // Close the drawer without navigating to an unimplemented page.
+          // Close the drawer before navigating.
           Navigator.pop(context);
+
+          if (routeName != null) {
+            Navigator.pushNamed(context, routeName);
+          } else if (!selected) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$title will be available soon.'),
+              ),
+            );
+          }
         },
       ),
     );

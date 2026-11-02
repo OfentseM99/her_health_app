@@ -17,6 +17,8 @@ dependencies:
   shared_preferences: ^2.5.5
   local_auth: ^3.0.2
   qr_flutter: ^4.1.0
+  image_picker: ^1.2.4
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:

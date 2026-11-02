@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme_manager.dart';
 
 import 'screens/welcome_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -7,8 +8,11 @@ import 'screens/register_screen.dart';
 import 'screens/period_tracker_screen.dart';
 import 'screens/patient_dashboard_screen.dart';
 import 'screens/user_qr_screen.dart';
+import 'screens/profile_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ThemeManager.instance.loadTheme();
   runApp(const HerHealthApp());
 }
 
@@ -17,7 +21,9 @@ class HerHealthApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return AnimatedBuilder(
+      animation: ThemeManager.instance,
+      builder: (context, _) => MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Her Health',
 
@@ -127,6 +133,23 @@ class HerHealthApp extends StatelessWidget {
         ),
       ),
 
+      themeMode: ThemeManager.instance.themeMode,
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFB04F6C),
+          brightness: Brightness.dark,
+        ),
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1E1E1E),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+        ),
+      ),
+
       // Temporary startup screen for testing.
       home: const AppStartScreen(),
 
@@ -138,7 +161,9 @@ class HerHealthApp extends StatelessWidget {
         '/period-tracker': (context) => const PeriodTrackerScreen(),
         '/dashboard': (context) => const PatientDashboardScreen(),
         '/user-qr': (context) => const UserQrScreen(),
+        '/profile': (context) => const ProfileScreen(),
       },
+    ),
     );
   }
 }

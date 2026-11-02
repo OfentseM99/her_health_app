@@ -1,3 +1,4 @@
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'billing_screen.dart';
@@ -38,6 +39,8 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
   String cycleLength = '';
   String periodLength = '';
   String postpartumWeeks = '';
+  String profileName = '';
+  String? profileImagePath;
 
   @override
   void initState() {
@@ -61,17 +64,19 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       cycleLength = prefs.getString('cycleLength') ?? '';
       periodLength = prefs.getString('periodLength') ?? '';
       postpartumWeeks = prefs.getString('postpartumWeeks') ?? '';
+      profileName = prefs.getString('profile_full_name') ?? '';
+      profileImagePath = prefs.getString('profile_image_path');
 
       isLoading = false;
     });
   }
 
   String get displayName {
-    final name = widget.patientName?.trim();
+    final savedName = profileName.trim();
+    if (savedName.isNotEmpty) return savedName;
 
-    if (name != null && name.isNotEmpty) {
-      return name;
-    }
+    final name = widget.patientName?.trim();
+    if (name != null && name.isNotEmpty) return name;
 
     return 'there';
   }
@@ -153,7 +158,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           ),
           Positioned.fill(
             child: ColoredBox(
-              color: pageBackground.withValues(alpha: 0.88),
+              color: pageBackground.withValues(alpha: 0.68),
             ),
           ),
           SingleChildScrollView(
@@ -173,7 +178,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Your health matters. Let’s take it one day at a time.',
+                  "Your health matters. Let's take it one day at a time.",
                   style: TextStyle(
                     fontSize: 15,
                     color: warmText,
@@ -245,22 +250,109 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
             color: rose,
           ),
         ),
-        Container(
-          height: 43,
-          width: 43,
-          decoration: BoxDecoration(
-            color: blush,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: const Icon(
-            Icons.person_outline,
-            color: rose,
+        InkWell(
+          onTap: _showProfilePhoto,
+          borderRadius: BorderRadius.circular(17),
+          child: Container(
+            height: 64,
+            width: 64,
+            decoration: BoxDecoration(
+              color: blush,
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(17),
+              child: profileImagePath != null &&
+                      profileImagePath!.isNotEmpty
+                  ? Image.file(
+                      File(profileImagePath!),
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(
+                        Icons.person_outline,
+                        color: rose,
+                        size: 30,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.person_outline,
+                      color: rose,
+                      size: 30,
+                    ),
+            ),
           ),
         ),
       ],
     );
   }
 
+  Future<void> _showProfilePhoto() async {
+    final imagePath = profileImagePath;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        final screenSize = MediaQuery.of(dialogContext).size;
+
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (imagePath != null && imagePath.isNotEmpty)
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: screenSize.height * 0.60,
+                      maxWidth: screenSize.width * 0.85,
+                    ),
+                    child: InteractiveViewer(
+                      child: Image.file(
+                        File(imagePath),
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.person_outline,
+                          size: 100,
+                          color: rose,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.person_outline,
+                    size: 100,
+                    color: rose,
+                  ),
+                const SizedBox(height: 18),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 10,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text('Close'),
+                    ),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        Navigator.pop(dialogContext);
+                        await Navigator.pushNamed(context, '/profile');
+                        if (!mounted) return;
+                        await _loadPatientInformation();
+                      },
+                      icon: const Icon(Icons.edit),
+                      label: const Text('Edit Profile'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
   // PERSONAL HEALTH JOURNEY
 
   Widget _buildJourneyHealthCard() {
@@ -518,7 +610,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           _informationRow(
             Icons.date_range_outlined,
             'Estimated fertile window',
-            '${_formatDate(fertileStart)} – ${_formatDate(fertileEnd)}',
+            '${_formatDate(fertileStart)} â€“ ${_formatDate(fertileEnd)}',
           ),
           const SizedBox(height: 18),
           _softMessage(
@@ -610,7 +702,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           const SizedBox(height: 18),
           _symptomButton(
             'Talk About Your Health',
-            'I would like help with my general women’s health and wellbeing.',
+            'I would like help with my general womenâ€™s health and wellbeing.',
           ),
         ],
       ),
@@ -973,7 +1065,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'Ask questions about your healthcare journey, symptoms or general women’s health.',
+                        'Ask questions about your healthcare journey, symptoms or general womenâ€™s health.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: warmText,
@@ -1074,9 +1166,21 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           ),
           const SizedBox(height: 24),
           Center(
-            child: _iconBox(
-              Icons.person_outline,
-              size: 90,
+            child: CircleAvatar(
+              radius: 45,
+              backgroundColor: blush,
+              backgroundImage: profileImagePath != null &&
+                      profileImagePath!.isNotEmpty
+                  ? FileImage(File(profileImagePath!))
+                  : null,
+              child: profileImagePath == null ||
+                      profileImagePath!.isEmpty
+                  ? const Icon(
+                      Icons.person_outline,
+                      size: 45,
+                      color: rose,
+                    )
+                  : null,
             ),
           ),
           const SizedBox(height: 15),
@@ -1153,7 +1257,16 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           Icons.chevron_right,
           color: warmText,
         ),
-        onTap: () => _showComingSoon(title),
+        onTap: () async {
+          if (title == 'Personal Information') {
+            await Navigator.pushNamed(context, '/profile');
+            await _loadPatientInformation();
+          } else if (title == 'Settings') {
+            await Navigator.pushNamed(context, '/settings');
+          } else {
+            _showComingSoon(title);
+          }
+        },
       ),
     );
   }
