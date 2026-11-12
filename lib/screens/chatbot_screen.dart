@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class ChatbotScreen extends StatefulWidget {
   final String journey;
@@ -21,6 +21,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   static const Color forestGreen = Color(0xFF2F3A2A);
   static const Color warmText = Color(0xFF5E5652);
   static const Color cardBorder = Color(0xFFEADFDB);
+
+  bool get _isDarkMode =>
+      Theme.of(context).brightness == Brightness.dark;
 
   final TextEditingController messageController = TextEditingController();
 
@@ -114,7 +117,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Her Health AI',
+                    'Her Health Chatbot',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -154,12 +157,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Existing background image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/backgrounds/background.jpeg',
+              _isDarkMode
+                  ? 'assets/images/backgrounds/background_dark.jpeg'
+                  : 'assets/images/backgrounds/background.jpeg',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
-                return const ColoredBox(
-                  color: Color(0xFFFAF6F3),
-                );
+                return ColoredBox(color: _isDarkMode ? const Color(0xFF121212) : const Color(0xFFFAF6F3));
               },
             ),
           ),
@@ -167,7 +170,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           // Soft background overlay
           Positioned.fill(
             child: Container(
-              color: const Color(0xFFFAF6F3).withValues(alpha: 0.78),
+              color: _isDarkMode ? Colors.black.withValues(alpha: 0.30) : const Color(0xFFFAF6F3).withValues(alpha: 0.78),
             ),
           ),
 
@@ -179,9 +182,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.96),
+                  color: _isDarkMode ? const Color(0xFF242124) : Colors.white.withValues(alpha: 0.96),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: cardBorder),
+                  border: Border.all(color: _isDarkMode ? const Color(0xFF454045) : cardBorder),
                 ),
                 child: Row(
                   children: [
@@ -189,7 +192,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       height: 44,
                       width: 44,
                       decoration: BoxDecoration(
-                        color: blush,
+                        color: _isDarkMode ? const Color(0xFF49313B) : blush,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(
@@ -213,8 +216,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           const SizedBox(height: 3),
                           Text(
                             widget.journey,
-                            style: const TextStyle(
-                              color: forestGreen,
+                            style: TextStyle(color: _isDarkMode ? Colors.white : forestGreen,
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
@@ -253,7 +255,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 height: 32,
                                 width: 32,
                                 decoration: BoxDecoration(
-                                  color: blush,
+                                  color: _isDarkMode ? const Color(0xFF49313B) : blush,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -271,7 +273,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                   vertical: 13,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: isUser ? rose : Colors.white,
+                                  color: isUser ? rose : (_isDarkMode ? const Color(0xFF242124) : Colors.white),
                                   borderRadius: BorderRadius.only(
                                     topLeft: const Radius.circular(20),
                                     topRight: const Radius.circular(20),
@@ -284,7 +286,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                   ),
                                   border: isUser
                                       ? null
-                                      : Border.all(color: cardBorder),
+                                      : Border.all(color: _isDarkMode ? const Color(0xFF454045) : cardBorder),
                                   boxShadow: const [
                                     BoxShadow(
                                       color: Color(0x10000000),
@@ -296,7 +298,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                 child: Text(
                                   message['message'] ?? '',
                                   style: TextStyle(
-                                    color: isUser ? Colors.white : warmText,
+                                    color: isUser ? Colors.white : (_isDarkMode ? const Color(0xFFF5F0F2) : warmText),
                                     fontSize: 14,
                                     height: 1.5,
                                   ),
@@ -318,9 +320,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   margin: const EdgeInsets.fromLTRB(14, 8, 14, 12),
                   padding: const EdgeInsets.fromLTRB(14, 6, 6, 6),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: _isDarkMode ? const Color(0xFF242124) : Colors.white,
                     borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: cardBorder),
+                    border: Border.all(color: _isDarkMode ? const Color(0xFF454045) : cardBorder),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x12000000),
@@ -343,10 +345,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           textCapitalization: TextCapitalization.sentences,
                           minLines: 1,
                           maxLines: 4,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Ask a health question...',
                             hintStyle: TextStyle(
-                              color: warmText,
+                              color: _isDarkMode ? Colors.white70 : warmText,
                               fontSize: 14,
                             ),
                             border: InputBorder.none,
@@ -383,7 +385,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   // Navigation drawer
   Drawer buildDrawer() {
     return Drawer(
-      backgroundColor: const Color(0xFFFFFCFB),
+      backgroundColor: _isDarkMode ? const Color(0xFF1E1E1E) : const Color(0xFFFFFCFB),
       child: SafeArea(
         child: Column(
           children: [
@@ -443,7 +445,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             drawerItem(
               context,
               Icons.chat_bubble_outline,
-              'AI Assistant',
+              'Chatbot Assistant',
               selected: true,
             ),
             drawerItem(
@@ -484,13 +486,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               'Settings',
             ),
             const Spacer(),
-            const Divider(color: cardBorder),
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Divider(color: _isDarkMode ? const Color(0xFF454045) : cardBorder),
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: Text(
                 'Your health matters.',
                 style: TextStyle(
-                  color: warmText,
+                  color: _isDarkMode ? Colors.white70 : warmText,
                   fontSize: 13,
                 ),
               ),
@@ -515,18 +517,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
       child: ListTile(
         selected: selected,
-        selectedTileColor: blush,
+        selectedTileColor: _isDarkMode ? const Color(0xFF49313B) : blush,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
         leading: Icon(
           icon,
-          color: selected ? rose : sage,
+          color: selected ? rose : (_isDarkMode ? Colors.white70 : sage),
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: selected ? rose : forestGreen,
+            color: selected ? const Color(0xFFD9879E) : (_isDarkMode ? Colors.white : forestGreen),
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -548,3 +550,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 }
+
+
+

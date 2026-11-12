@@ -1,4 +1,4 @@
-name: her_health_app
+﻿name: her_health_app
 description: A women's health application.
 publish_to: "none"
 
@@ -34,3 +34,4 @@ flutter:
   assets:
     - assets/images/logo/logo.png
     - assets/images/backgrounds/background.jpeg
+    - assets/images/backgrounds/background_dark.jpeg

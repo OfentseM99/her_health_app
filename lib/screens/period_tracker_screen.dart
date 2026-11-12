@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +21,27 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   static const Color warmText = Color(0xFF5E5652);
   static const Color cardBorder = Color(0xFFEADFDB);
   static const Color pageBackground = Color(0xFFFAF6F3);
+  // Dark mode helpers
+  bool get _isDarkMode =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color get _pageBackground =>
+      _isDarkMode ? const Color(0xFF121212) : pageBackground;
+
+  Color get _cardBackground =>
+      _isDarkMode ? const Color(0xFF242124) : Colors.white;
+
+  Color get _primaryText =>
+      _isDarkMode ? Colors.white : forestGreen;
+
+  Color get _secondaryText =>
+      _isDarkMode ? const Color(0xFFE8E0E4) : warmText;
+
+  Color get _accentText =>
+      _isDarkMode ? const Color(0xFFFF80AB) : forestGreen;
+
+  Color get _borderColor =>
+      _isDarkMode ? const Color(0xFF454045) : cardBorder;
 
   DateTime focusedDay = DateTime.now();
   DateTime selectedDay = DateTime.now();
@@ -301,9 +322,9 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.97),
+        color: _cardBackground.withValues(alpha: _isDarkMode ? 0.98 : 0.97),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cardBorder),
+        border: Border.all(color: _borderColor),
         boxShadow: [
           BoxShadow(
             color: forestGreen.withValues(alpha: 0.04),
@@ -324,20 +345,20 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.w800,
-              color: forestGreen,
+              color: _accentText,
             ),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 5),
             Text(
               subtitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: warmText,
+                color: _secondaryText,
               ),
             ),
           ],
@@ -364,8 +385,8 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                color: warmText,
+              style: TextStyle(
+                color: _secondaryText,
                 fontSize: 13,
               ),
             ),
@@ -384,8 +405,8 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                color: warmText,
+              style: TextStyle(
+                color: _secondaryText,
                 fontSize: 13,
               ),
             ),
@@ -395,9 +416,9 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: forestGreen,
+                color: _accentText,
                 fontSize: 13,
               ),
             ),
@@ -412,10 +433,10 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: forestGreen,
+          color: _accentText,
         ),
       ),
     );
@@ -428,13 +449,13 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: const TextStyle(
-        color: Color(0xFFAAA19D),
+      hintStyle: TextStyle(
+        color: _isDarkMode ? Colors.white70 : const Color(0xFFAAA19D),
         fontSize: 13,
       ),
-      prefixIcon: icon == null ? null : Icon(icon, color: sage, size: 20),
+      prefixIcon: icon == null ? null : Icon(icon, color: _isDarkMode ? const Color(0xFFFF80AB) : sage, size: 20),
       filled: true,
-      fillColor: pageBackground,
+      fillColor: _pageBackground,
       alignLabelWithHint: alignLabelWithHint,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 15,
@@ -442,11 +463,11 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: cardBorder),
+        borderSide: BorderSide(color: _borderColor),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: cardBorder),
+        borderSide: BorderSide(color: _borderColor),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
@@ -549,7 +570,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -558,7 +579,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w800,
-                            color: forestGreen,
+                            color: _accentText,
                           ),
                         ),
                         SizedBox(height: 3),
@@ -566,7 +587,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                           'Select a date to view your journal',
                           style: TextStyle(
                             fontSize: 12,
-                            color: warmText,
+                            color: _secondaryText,
                           ),
                         ),
                       ],
@@ -584,31 +605,31 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                 calendarFormat: CalendarFormat.month,
                 rowHeight: 45,
                 daysOfWeekHeight: 32,
-                headerStyle: const HeaderStyle(
+                headerStyle: HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
                   leftChevronIcon: Icon(
                     Icons.chevron_left,
-                    color: forestGreen,
+                    color: _accentText,
                   ),
                   rightChevronIcon: Icon(
                     Icons.chevron_right,
-                    color: forestGreen,
+                    color: _accentText,
                   ),
                   titleTextStyle: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: forestGreen,
+                    color: _accentText,
                     fontSize: 16,
                   ),
                 ),
-                daysOfWeekStyle: const DaysOfWeekStyle(
+                daysOfWeekStyle: DaysOfWeekStyle(
                   weekdayStyle: TextStyle(
-                    color: warmText,
+                    color: _secondaryText,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
                   weekendStyle: TextStyle(
-                    color: warmText,
+                    color: _secondaryText,
                     fontWeight: FontWeight.w600,
                     fontSize: 12,
                   ),
@@ -623,12 +644,12 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                     shape: BoxShape.circle,
                   ),
                   outsideDaysVisible: false,
-                  defaultTextStyle: const TextStyle(
-                    color: forestGreen,
+                  defaultTextStyle: TextStyle(
+                    color: _primaryText,
                     fontSize: 13,
                   ),
-                  weekendTextStyle: const TextStyle(
-                    color: forestGreen,
+                  weekendTextStyle: TextStyle(
+                    color: _primaryText,
                     fontSize: 13,
                   ),
                   todayTextStyle: const TextStyle(
@@ -854,7 +875,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                   decoration: BoxDecoration(
                     color: blushPink.withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: cardBorder),
+                    border: Border.all(color: _borderColor),
                   ),
                   child: Row(
                     children: [
@@ -1056,7 +1077,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                     decoration: BoxDecoration(
                       color: pageBackground,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: cardBorder),
+                      border: Border.all(color: _borderColor),
                     ),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
@@ -1349,7 +1370,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           decoration: BoxDecoration(
             color: blushPink.withValues(alpha: 0.7),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: cardBorder),
+            border: Border.all(color: _borderColor),
           ),
           child: const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1384,8 +1405,8 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        backgroundColor: pageBackground,
+      return Scaffold(
+        backgroundColor: _pageBackground,
         body: Center(
           child: CircularProgressIndicator(color: rose),
         ),
@@ -1395,18 +1416,20 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: pageBackground,
+        backgroundColor: _pageBackground,
         body: Stack(
           fit: StackFit.expand,
           children: [
             Image.asset(
-              'assets/images/backgrounds/background.jpeg',
+              _isDarkMode
+                  ? 'assets/images/backgrounds/background_dark.jpeg'
+                  : 'assets/images/backgrounds/background.jpeg',
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) =>
-                  Container(color: pageBackground),
+                  Container(color: _pageBackground),
             ),
             Container(
-              color: pageBackground.withValues(alpha: 0.82),
+              color: _pageBackground.withValues(alpha: _isDarkMode ? 0.88 : 0.82),
             ),
             SafeArea(
               child: Column(
@@ -1421,9 +1444,9 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                           height: 54,
                           padding: const EdgeInsets.all(5),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: _cardBackground,
                             borderRadius: BorderRadius.circular(17),
-                            border: Border.all(color: cardBorder),
+                            border: Border.all(color: _borderColor),
                           ),
                           child: Image.asset(
                             'assets/images/logo/logo.png',
@@ -1437,7 +1460,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                           ),
                         ),
                         const SizedBox(width: 13),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -1446,7 +1469,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                                 style: TextStyle(
                                   fontSize: 23,
                                   fontWeight: FontWeight.w800,
-                                  color: forestGreen,
+                                  color: _accentText,
                                 ),
                               ),
                               SizedBox(height: 4),
@@ -1454,7 +1477,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                                 'Understand your health over time',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: warmText,
+                                  color: _secondaryText,
                                 ),
                               ),
                             ],
@@ -1469,13 +1492,13 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(5),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.96),
+                      color: _cardBackground.withValues(alpha: 0.98),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: cardBorder),
+                      border: Border.all(color: _borderColor),
                     ),
                     child: TabBar(
                       labelColor: Colors.white,
-                      unselectedLabelColor: warmText,
+                      unselectedLabelColor: _secondaryText,
                       indicator: BoxDecoration(
                         color: rose,
                         borderRadius: BorderRadius.circular(15),
@@ -1530,3 +1553,8 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
     );
   }
 }
+
+
+
+
+

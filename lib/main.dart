@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'theme_manager.dart';
 
 import 'screens/welcome_screen.dart';
@@ -9,6 +9,7 @@ import 'screens/period_tracker_screen.dart';
 import 'screens/patient_dashboard_screen.dart';
 import 'screens/user_qr_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -137,19 +138,130 @@ class HerHealthApp extends StatelessWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFB04F6C),
-          brightness: Brightness.dark,
+
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFD9879E),
+          onPrimary: Colors.white,
+          secondary: Color(0xFFB96F86),
+          onSecondary: Colors.white,
+          surface: Color(0xFF242124),
+          onSurface: Color(0xFFF5F0F2),
+          error: Color(0xFFCF6679),
+          onError: Colors.white,
         ),
+
         scaffoldBackgroundColor: const Color(0xFF121212),
+
+        textTheme: const TextTheme(
+          headlineLarge: TextStyle(
+            color: Color(0xFFF5F0F2),
+            fontSize: 32,
+            fontWeight: FontWeight.w800,
+          ),
+          headlineMedium: TextStyle(
+            color: Color(0xFFF5F0F2),
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+          ),
+          titleLarge: TextStyle(
+            color: Color(0xFFF5F0F2),
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+          titleMedium: TextStyle(
+            color: Color(0xFFF5F0F2),
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+          bodyLarge: TextStyle(
+            color: Color(0xFFE8E0E4),
+            fontSize: 16,
+          ),
+          bodyMedium: TextStyle(
+            color: Color(0xFFE8E0E4),
+            fontSize: 14,
+          ),
+        ),
+
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1E1E1E),
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
         ),
-      ),
 
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF242124),
+          labelStyle: const TextStyle(color: Color(0xFFE8E0E4)),
+          hintStyle: const TextStyle(color: Color(0xFFBDB5BA)),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFF51464D)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFF51464D)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: Color(0xFFD9879E),
+              width: 2,
+            ),
+          ),
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFB04F6C),
+            foregroundColor: Colors.white,
+            minimumSize: const Size.fromHeight(54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        ),
+
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFFD9879E),
+            side: const BorderSide(color: Color(0xFFD9879E)),
+            minimumSize: const Size.fromHeight(54),
+          ),
+        ),
+
+        iconTheme: const IconThemeData(
+          color: Color(0xFFE8E0E4),
+        ),
+
+        dividerColor: const Color(0xFF454045),
+
+        dialogTheme: const DialogThemeData(
+          backgroundColor: Color(0xFF242124),
+          titleTextStyle: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+          contentTextStyle: TextStyle(
+            color: Color(0xFFE8E0E4),
+            fontSize: 14,
+          ),
+        ),
+
+        drawerTheme: const DrawerThemeData(
+          backgroundColor: Color(0xFF1E1E1E),
+        ),
+
+        navigationBarTheme: const NavigationBarThemeData(
+          backgroundColor: Color(0xFF1E1E1E),
+          indicatorColor: Color(0xFF49313B),
+          labelTextStyle: WidgetStatePropertyAll(
+            TextStyle(color: Color(0xFFE8E0E4)),
+          ),
+        ),
+      ),
       // Temporary startup screen for testing.
       home: const AppStartScreen(),
 
@@ -162,6 +274,7 @@ class HerHealthApp extends StatelessWidget {
         '/dashboard': (context) => const PatientDashboardScreen(),
         '/user-qr': (context) => const UserQrScreen(),
         '/profile': (context) => const ProfileScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
     ),
     );
@@ -208,3 +321,5 @@ class _AppStartScreenState extends State<AppStartScreen> {
     );
   }
 }
+
+

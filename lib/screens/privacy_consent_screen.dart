@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'health_setup_screen.dart';
 
 class PrivacyConsentScreen extends StatefulWidget {
@@ -169,9 +169,9 @@ class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
 
                         privacyItem(
                           Icons.smart_toy_outlined,
-                          'AI personalisation',
+                          'Chatbot personalisation',
                           'Information you provide may help Her Health '
-                              'AI tailor its responses to your '
+                              'Chatbot tailor its responses to your '
                               'healthcare journey.',
                         ),
 
@@ -390,3 +390,4 @@ class _PrivacyConsentScreenState extends State<PrivacyConsentScreen> {
     );
   }
 }
+

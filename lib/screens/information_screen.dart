@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class InformationScreen extends StatelessWidget {
   const InformationScreen({super.key});
@@ -56,7 +56,7 @@ class InformationScreen extends StatelessWidget {
                       const SizedBox(height: 28),
                       infoCard(
                         icon: Icons.auto_awesome_outlined,
-                        title: 'AI Health Companion',
+                        title: 'Health Chatbot',
                         description: 'Get trusted health information, receive '
                             'personalised guidance, and ask questions anytime.',
                       ),
@@ -81,6 +81,55 @@ class InformationScreen extends StatelessWidget {
                             'Her Health is designed to support women with '
                             'accessible healthcare information and guidance.',
                       ),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Theme.of(context).dividerColor),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Developed by',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFFFF80AB)
+                                    : forestGreen,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            for (final developer in [
+                              'Ofentse Maputla',
+                              'Buhle Mochela',
+                              'Nako Junior Molokele',
+                              'Bonolo Molete',
+                            ])
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.person_outline, color: Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFF80AB) : rose),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      developer,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white : warmText,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
@@ -176,3 +225,4 @@ class InformationScreen extends StatelessWidget {
     );
   }
 }
+

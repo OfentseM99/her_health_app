@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import 'login_screen.dart';
 import 'information_screen.dart';
@@ -71,7 +71,7 @@ class OnboardingScreen extends StatelessWidget {
 
                       buildInfoCard(
                         icon: Icons.auto_awesome_outlined,
-                        title: 'AI Health Companion',
+                        title: 'Health Chatbot',
                         description:
                             'Get trusted health information, receive personalised guidance, and ask questions anytime.',
                       ),
@@ -256,3 +256,4 @@ class OnboardingScreen extends StatelessWidget {
     );
   }
 }
+

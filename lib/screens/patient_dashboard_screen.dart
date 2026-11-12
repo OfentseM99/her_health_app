@@ -29,6 +29,27 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
   static const Color cardBorder = Color(0xFFEADFDB);
   static const Color pageBackground = Color(0xFFFAF6F3);
 
+  bool get _isDarkMode =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color get _pageBackground =>
+      _isDarkMode ? const Color(0xFF121212) : pageBackground;
+
+  Color get _cardBackground =>
+      _isDarkMode ? const Color(0xFF242124) : Colors.white;
+
+  Color get _primaryText =>
+      _isDarkMode ? Colors.white : forestGreen;
+
+  Color get _accentText =>
+      _isDarkMode ? const Color(0xFFFF80AB) : forestGreen;
+
+  Color get _secondaryText =>
+      _isDarkMode ? Colors.white70 : warmText;
+
+  Color get _cardBorderColor =>
+      _isDarkMode ? const Color(0xFF454045) : cardBorder;
+
   int selectedIndex = 0;
   bool isLoading = true;
 
@@ -112,8 +133,8 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Scaffold(
-        backgroundColor: pageBackground,
+      return Scaffold(
+        backgroundColor: _pageBackground,
         body: Center(
           child: CircularProgressIndicator(color: rose),
         ),
@@ -121,7 +142,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     }
 
     return Scaffold(
-      backgroundColor: pageBackground,
+      backgroundColor: _pageBackground,
       body: _buildCurrentPage(),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -150,15 +171,19 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/backgrounds/background.jpeg',
+              _isDarkMode
+                  ? 'assets/images/backgrounds/background_dark.jpeg'
+                  : 'assets/images/backgrounds/background.jpeg',
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) =>
-                  const ColoredBox(color: pageBackground),
+                  ColoredBox(color: _pageBackground),
             ),
           ),
           Positioned.fill(
             child: ColoredBox(
-              color: pageBackground.withValues(alpha: 0.68),
+              color: _isDarkMode
+                  ? Colors.black.withValues(alpha: 0.25)
+                  : pageBackground.withValues(alpha: 0.68),
             ),
           ),
           SingleChildScrollView(
@@ -170,18 +195,16 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 const SizedBox(height: 28),
                 Text(
                   'Good day, $displayName',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 27,
                     fontWeight: FontWeight.bold,
-                    color: forestGreen,
+                    color: _primaryText,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Your health matters. Let's take it one day at a time.",
-                  style: TextStyle(
+                Text("Your health matters. Let's take it one day at a time.", style: TextStyle(
                     fontSize: 15,
-                    color: warmText,
+                    color: _secondaryText,
                     height: 1.5,
                   ),
                 ),
@@ -194,23 +217,23 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                   _buildCycleCard(),
                 ],
                 const SizedBox(height: 25),
-                const Text(
+                Text(
                   'Quick Actions',
                   style: TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
-                    color: forestGreen,
+                    color: _primaryText,
                   ),
                 ),
                 const SizedBox(height: 14),
                 _buildQuickActions(),
                 const SizedBox(height: 25),
-                const Text(
+                Text(
                   'Your Healthcare Journey',
                   style: TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.bold,
-                    color: forestGreen,
+                    color: _primaryText,
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -435,8 +458,8 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
             const SizedBox(height: 7),
             Text(
               trimester,
-              style: const TextStyle(
-                color: forestGreen,
+              style: TextStyle(
+                color: _accentText,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -468,9 +491,9 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 ),
                 Text(
                   '$currentWeek / 40 weeks',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: forestGreen,
+                    color: _accentText,
                   ),
                 ),
               ],
@@ -610,7 +633,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           _informationRow(
             Icons.date_range_outlined,
             'Estimated fertile window',
-            '${_formatDate(fertileStart)} â€“ ${_formatDate(fertileEnd)}',
+            '${_formatDate(fertileStart)} Ã¢â‚¬â€œ ${_formatDate(fertileEnd)}',
           ),
           const SizedBox(height: 18),
           _softMessage(
@@ -702,7 +725,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           const SizedBox(height: 18),
           _symptomButton(
             'Talk About Your Health',
-            'I would like help with my general womenâ€™s health and wellbeing.',
+            'I would like help with my general womenÃ¢â‚¬â„¢s health and wellbeing.',
           ),
         ],
       ),
@@ -752,13 +775,13 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
             children: [
               _iconBox(Icons.calendar_month_outlined),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Next Appointment',
                   style: TextStyle(
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
-                    color: forestGreen,
+                    color: _accentText,
                   ),
                 ),
               ),
@@ -845,7 +868,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     VoidCallback onTap,
   ) {
     return Material(
-      color: Colors.white,
+      color: _cardBackground,
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
@@ -854,7 +877,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: cardBorder),
+            border: Border.all(color: _cardBorderColor),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -864,10 +887,10 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
               const SizedBox(height: 9),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: forestGreen,
+                  color: _accentText,
                 ),
               ),
             ],
@@ -924,10 +947,10 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                 const SizedBox(height: 6),
                 Text(
                   displayJourney,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: forestGreen,
+                    color: _accentText,
                   ),
                 ),
               ],
@@ -961,7 +984,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
               ),
               SizedBox(width: 8),
               Text(
-                'Ask AI',
+                'Ask Chatbot',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -997,13 +1020,13 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                         size: 76,
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Your Health Calendar',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 23,
                           fontWeight: FontWeight.bold,
-                          color: forestGreen,
+                          color: _accentText,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1038,7 +1061,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       child: Column(
         children: [
           _pageHeader(
-            'Her Health AI',
+            'Her Health Chatbot',
             Icons.chat_bubble_outline,
           ),
           Expanded(
@@ -1054,18 +1077,18 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                         size: 80,
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'How can I help you?',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: forestGreen,
+                          color: _accentText,
                         ),
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        'Ask questions about your healthcare journey, symptoms or general womenâ€™s health.',
+                        'Ask questions about your healthcare journey, symptoms or general womenÃ¢â‚¬â„¢s health.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: warmText,
@@ -1107,13 +1130,13 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
                         size: 75,
                       ),
                       const SizedBox(height: 15),
-                      const Text(
+                      Text(
                         'No doctor assigned yet',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: forestGreen,
+                          color: _accentText,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -1187,10 +1210,10 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           Center(
             child: Text(
               displayName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: forestGreen,
+                color: _primaryText,
               ),
             ),
           ),
@@ -1199,7 +1222,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
             child: Text(
               displayJourney,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: warmText),
+              style: TextStyle(color: _secondaryText),
             ),
           ),
           const SizedBox(height: 25),
@@ -1240,22 +1263,22 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBackground,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: cardBorder),
+        border: Border.all(color: _cardBorderColor),
       ),
       child: ListTile(
         leading: _iconBox(icon),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
-            color: forestGreen,
+            color: _primaryText,
           ),
         ),
-        trailing: const Icon(
+        trailing: Icon(
           Icons.chevron_right,
-          color: warmText,
+          color: _secondaryText,
         ),
         onTap: () async {
           if (title == 'Personal Information') {
@@ -1276,8 +1299,10 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
   Widget _buildBottomNavigationBar() {
     return NavigationBar(
       selectedIndex: selectedIndex,
-      backgroundColor: Colors.white,
-      indicatorColor: blush,
+      backgroundColor: _cardBackground,
+      indicatorColor: _isDarkMode
+          ? const Color(0xFF49313B)
+          : blush,
       onDestinationSelected: (index) {
         if (index == 5) {
           Navigator.pushNamed(context, '/user-qr');
@@ -1302,7 +1327,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
         NavigationDestination(
           icon: Icon(Icons.smart_toy_outlined),
           selectedIcon: Icon(Icons.smart_toy, color: rose),
-          label: 'AI',
+          label: 'Chatbot',
         ),
         NavigationDestination(
           icon: Icon(Icons.medical_services_outlined),
@@ -1330,12 +1355,14 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBackground,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: cardBorder),
+        border: Border.all(color: _cardBorderColor),
         boxShadow: [
           BoxShadow(
-            color: forestGreen.withValues(alpha: 0.04),
+            color: _isDarkMode
+              ? Colors.black.withValues(alpha: 0.15)
+              : forestGreen.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -1353,10 +1380,10 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 19,
               fontWeight: FontWeight.bold,
-              color: forestGreen,
+              color: _primaryText,
             ),
           ),
         ),
@@ -1423,7 +1450,7 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(color: warmText),
+            style: TextStyle(color: _secondaryText),
           ),
         ),
         const SizedBox(width: 8),
@@ -1431,8 +1458,8 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           child: Text(
             value,
             textAlign: TextAlign.end,
-            style: const TextStyle(
-              color: forestGreen,
+            style: TextStyle(
+              color: _accentText,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1500,10 +1527,10 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: forestGreen,
+                color: _primaryText,
               ),
             ),
           ),
@@ -1590,3 +1617,8 @@ class _PatientDashboardScreenState extends State<PatientDashboardScreen> {
     );
   }
 }
+
+
+
+
+

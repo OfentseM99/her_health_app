@@ -1,4 +1,4 @@
-
+﻿
 import 'package:flutter/material.dart';
 import 'chatbot_screen.dart';
 
@@ -310,7 +310,7 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
               },
         icon: const Icon(Icons.chat_bubble_outline),
         label: const Text(
-          'Continue to Her Health AI',
+          'Continue to Chatbot',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -322,7 +322,7 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
 
   // Remove the pregnancy emoji prefix from the displayed title.
   String get displayJourney {
-    return widget.journey.replaceFirst(RegExp(r'^🤰\s*'), '');
+    return widget.journey.replaceFirst(RegExp(r'^ðŸ¤°\s*'), '');
   }
   @override
   Widget build(BuildContext context) {
@@ -406,7 +406,7 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
 
                         const Center(
                           child: Text(
-                            'Let’s get to know you better so Her Health AI can give you personalised support.',
+                            'Letâ€™s get to know you better so the chatbot can give you personalised support.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 15,
@@ -669,3 +669,4 @@ class _JourneyQuestionsScreenState extends State<JourneyQuestionsScreen> {
     );
   }
 }
+

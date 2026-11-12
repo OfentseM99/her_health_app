@@ -36,6 +36,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const Color warmText = Color(0xFF5E5652);
   static const Color border = Color(0xFFEADFDB);
 
+  bool get _isDarkMode =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  Color get _pageBackground =>
+      _isDarkMode ? const Color(0xFF121212) : const Color(0xFFFAF6F3);
+
+  Color get _cardBackground =>
+      _isDarkMode ? const Color(0xFF242124) : Colors.white;
+
+  Color get _primaryText =>
+      _isDarkMode ? Colors.white : forest;
+
+  Color get _secondaryText =>
+      _isDarkMode ? const Color(0xFFE8E0E4) : warmText;
+
+  Color get _accentText =>
+      _isDarkMode ? const Color(0xFFFF80AB) : forest;
+
+  Color get _borderColor =>
+      _isDarkMode ? const Color(0xFF454045) : border;
+
   @override
   void initState() {
     super.initState();
@@ -202,20 +223,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         validator: validator,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: icon == null ? null : Icon(icon, color: sage),
+          labelStyle: TextStyle(color: _secondaryText),
+          floatingLabelStyle: TextStyle(color: _accentText),
+          prefixIcon: icon == null ? null : Icon(icon, color: _accentText),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: _cardBackground,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(color: border),
+            borderSide: BorderSide(color: _borderColor),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(color: border),
+            borderSide: BorderSide(color: _borderColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: const BorderSide(color: rose, width: 1.5),
+            borderSide: BorderSide(color: _isDarkMode ? const Color(0xFFFF80AB) : rose, width: 1.5),
           ),
         ),
       ),
@@ -227,22 +250,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardBackground,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: border),
+        border: Border.all(color: _borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: rose),
+              Icon(icon, color: _accentText),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    color: forest,
+                  style: TextStyle(
+                    color: _accentText,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -260,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAF6F3),
+      backgroundColor: _pageBackground,
       appBar: AppBar(
         title: const Text('Personal Information'),
         backgroundColor: Colors.white,
@@ -278,13 +301,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         CircleAvatar(
                           radius: 47,
-                          backgroundColor: const Color(0xFFF6DCE2),
+                          backgroundColor: _isDarkMode ? const Color(0xFF49313B) : const Color(0xFFF6DCE2),
                           backgroundImage: _profileImage != null
                               ? FileImage(_profileImage!)
                               : null,
                           child: _profileImage == null
-                              ? const Icon(Icons.person_rounded,
-                                  size: 52, color: rose)
+                              ? Icon(Icons.person_rounded,
+                                  size: 52, color: _isDarkMode ? const Color(0xFFFF80AB) : rose)
                               : null,
                         ),
                         const SizedBox(height: 8),
@@ -293,9 +316,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           icon: const Icon(Icons.camera_alt_outlined),
                           label: const Text('Add profile photo'),
                         ),
-                        const Text(
+                        Text(
                           'Keep your personal details up to date.',
-                          style: TextStyle(color: warmText),
+                          style: TextStyle(color: _secondaryText),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -406,3 +429,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+
+
+
+
