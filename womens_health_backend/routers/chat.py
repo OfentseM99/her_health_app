@@ -18,6 +18,7 @@ running this locally without every teammate needing their own API key.
 """
 
 import os
+import re
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -25,12 +26,9 @@ from pydantic import BaseModel
 
 from config.database import get_database_connection
 from utils.dependencies import get_current_user
-
+from nia.bridge import nia_reply_text
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
-# The model used for Nia's replies. Haiku is the fast, inexpensive option
-# in the current Claude lineup -- appropriate for short supportive chat
-# replies rather than long-form reasoning.
 _CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 
 _SYSTEM_PROMPT = """You are Nia, the supportive AI assistant inside Her Health, a women's health app tied to a real doctor's practice.
@@ -195,7 +193,10 @@ def _generate_rule_based_reply(message: str) -> str:
     the AI path isn't available."""
     lowered = message.lower()
     for keywords, response in _RULES:
-        if any(keyword in lowered for keyword in keywords):
+        ]        if any(
+            re.search(r"\b" + re.escape(k) + (r"\b" if len(k) <= 3 else ""), lowered)
+            for k in keywords
+        ):
             return response
     return _FALLBACK
 
@@ -237,7 +238,7 @@ def _generate_ai_reply(
             max_tokens=300,
             system=system,
             messages=claude_messages,
-        )
+        )        return response.content[0].text.strip() or None
 
     except Exception as e:
         print(f"AI REPLY FAILED: {type(e).__name__}: {e}")
