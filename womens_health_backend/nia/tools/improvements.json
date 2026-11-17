@@ -1,0 +1,325 @@
+{
+  "numbers": {
+    "AMBULANCE": "10177",
+    "MOBILE_EMERGENCY": "112",
+    "POLICE": "10111",
+    "SADAG": "0800 567 567",
+    "LIFELINE": "0861 322 322",
+    "GBV_COMMAND": "0800 428 428",
+    "STOP_GBV": "0800 150 150"
+  },
+  "overrides": {
+    "136": {
+      "answer": "Severe pain should not be ignored. Please get medical help now: go to your nearest clinic or hospital, or call an ambulance on {AMBULANCE} (or {MOBILE_EMERGENCY} from a mobile phone). If you are pregnant, tell them straight away."
+    },
+    "137": {
+      "answer": "Heavy bleeding can be serious. Please go to the nearest hospital or call {AMBULANCE} (or {MOBILE_EMERGENCY} from a mobile phone) now, especially if you feel dizzy, weak or faint."
+    },
+    "138": {
+      "answer": "Difficulty breathing can be a medical emergency. Please call {AMBULANCE} (or {MOBILE_EMERGENCY} from a mobile phone) or go to the nearest emergency department now. Do not wait."
+    },
+    "139": {
+      "answer": "I'm really sorry you're feeling this way. Your safety matters, and you do not have to face this alone. If you are in danger right now, call {MOBILE_EMERGENCY} from your mobile phone or go to your nearest emergency department. You can also speak to someone free of charge, any time of day or night: SADAG Suicide Crisis Line {SADAG} or LifeLine {LIFELINE}. If you can, stay with someone you trust."
+    },
+    "110": {
+      "answer": "Please get emergency care straight away if you have severe abdominal or pelvic pain, heavy bleeding, fainting, severe difficulty breathing, chest pain, seizures or any other sudden, serious symptom. Call {AMBULANCE} (or {MOBILE_EMERGENCY} from a mobile phone) or go to the nearest hospital."
+    },
+    "19": {
+      "answer": "Warning signs include vaginal bleeding, severe abdominal pain, severe headaches, blurred vision, difficulty breathing, fainting, fever, fluid leaking from the vagina, or reduced baby movements after a movement pattern has been established. If you notice any of these, contact your clinic or go to the nearest hospital promptly. If it is severe, call {AMBULANCE} (or {MOBILE_EMERGENCY} from a mobile phone)."
+    }
+  },
+  "extra_patterns": {
+    "1": [
+      "Am I pregnant?",
+      "What are the signs of pregnancy?",
+      "How do I know if I'm expecting?",
+      "What happens during early pregnancy?",
+      "pregnancy symptoms"
+    ],
+    "5": [
+      "Why is my baby kicking?",
+      "When will my baby move?",
+      "Should I feel my baby moving?",
+      "When do babies start kicking?"
+    ],
+    "34": [
+      "Why is my period late?",
+      "Why haven't I received my period?",
+      "Why have I missed my period?",
+      "What causes missed periods?"
+    ],
+    "25": [
+      "Why does my stomach hurt during my period?",
+      "Why are my cramps so painful?",
+      "Why do I have painful periods?"
+    ],
+    "26": [
+      "How do I stop period cramps?",
+      "How to ease period pain"
+    ],
+    "87": [
+      "Why am I getting discharge?",
+      "Is white discharge normal?",
+      "Why does my discharge smell?"
+    ],
+    "86": [
+      "Why am I experiencing vaginal itching?",
+      "Why am I itchy down there?"
+    ],
+    "103": [
+      "Why are my breasts painful?",
+      "Why do my breasts feel heavy?",
+      "Is breast tenderness normal?"
+    ],
+    "104": [
+      "Why do I have a breast lump?",
+      "I found a lump in my breast"
+    ],
+    "37": [
+      "How long does recovery take?",
+      "How do I recover after birth?"
+    ],
+    "36": [
+      "What happens after delivery?",
+      "What is normal after giving birth?"
+    ],
+    "91": [
+      "What are the signs of anaemia?",
+      "Can low iron cause dizziness?",
+      "Why am I always weak?"
+    ],
+    "90": [
+      "What is low iron?"
+    ],
+    "30": [
+      "What are the signs of PCOS?",
+      "What causes PCOS?",
+      "How do I know if I have PCOS?",
+      "Can PCOS affect fertility?"
+    ],
+    "79": [
+      "Why does sex hurt?"
+    ],
+    "78": [
+      "Can I get pregnant after sex?"
+    ],
+    "67": [
+      "How do I prevent STIs?"
+    ],
+    "68": [
+      "What are sexually transmitted infections?"
+    ],
+    "125": [
+      "How does Nia work?",
+      "How do you work?"
+    ],
+    "129": [
+      "How do I track my period?",
+      "period tracker"
+    ],
+    "130": [
+      "How do I track my pregnancy?",
+      "pregnancy tracker"
+    ],
+    "132": [
+      "What is the journal for?",
+      "health journey"
+    ],
+    "23": [
+      "How long does a period last?",
+      "How long do periods last?",
+      "How many days does a period last?"
+    ],
+    "39": [
+      "Is it normal to bleed after birth?",
+      "Bleeding after giving birth",
+      "How long will I bleed after delivery?",
+      "Is bleeding after childbirth normal?"
+    ],
+    "45": [
+      "I feel sad and hopeless since the baby came",
+      "I feel sad since I gave birth",
+      "I cry all the time since I had my baby",
+      "I can't bond with my baby",
+      "Am I depressed after birth?"
+    ],
+    "141": [
+      "What medication dosage should I take?",
+      "How much medicine should I take?",
+      "What dose of ibuprofen should I take?",
+      "How much paracetamol can I take?"
+    ],
+    "6": [
+      "Can I find out the gender of my baby?",
+      "Is it a boy or a girl?"
+    ]
+  },
+  "new_intents": [
+    {
+      "id": "S-FETAL",
+      "category": "10. IMPORTANT SAFETY RESPONSES",
+      "question": "What if my baby is not moving or moving less?",
+      "answer": "Reduced or no baby movement needs to be checked promptly. Please contact your clinic or go to the nearest hospital now. Do not wait until tomorrow.",
+      "patterns": [
+        "my baby is not moving",
+        "baby stopped moving",
+        "baby is moving less",
+        "reduced baby movement",
+        "I haven't felt my baby move"
+      ],
+      "needs_review": true
+    },
+    {
+      "id": "S-GBV",
+      "category": "10. IMPORTANT SAFETY RESPONSES",
+      "question": "What if I am being abused or I was assaulted?",
+      "answer": "I'm so sorry this happened to you. It is not your fault, and help is available. If you are in danger now, call {POLICE} (police) or {MOBILE_EMERGENCY} from a mobile phone. You can speak to someone free of charge: Gender-Based Violence Command Centre {GBV_COMMAND} or Stop Gender Violence {STOP_GBV}. If you were sexually assaulted, go to a clinic or hospital as soon as you can so you can get medical care.",
+      "patterns": [
+        "I was raped",
+        "I was sexually assaulted",
+        "my partner hits me",
+        "I am being abused",
+        "I don't feel safe at home"
+      ],
+      "needs_review": true
+    },
+    {
+      "id": "T-GREET",
+      "category": "SMALL TALK",
+      "question": "hello",
+      "answer": "Hi, I'm Nia, the Her Health assistant. I can share general information about pregnancy, periods, postpartum recovery, sexual and reproductive health and more. What would you like to know?",
+      "patterns": [
+        "hi",
+        "hello",
+        "hey",
+        "good morning",
+        "good afternoon",
+        "good evening",
+        "howzit",
+        "sawubona"
+      ],
+      "small_talk": true
+    },
+    {
+      "id": "T-THANKS",
+      "category": "SMALL TALK",
+      "question": "thank you",
+      "answer": "You're welcome! If you have another question, just ask. Take care of yourself.",
+      "patterns": [
+        "thanks",
+        "thank you",
+        "thanks a lot",
+        "ok thanks",
+        "cheers"
+      ],
+      "small_talk": true
+    },
+    {
+      "id": "T-BYE",
+      "category": "SMALL TALK",
+      "question": "bye",
+      "answer": "Goodbye, and take care. I'm here whenever you need me.",
+      "patterns": [
+        "bye",
+        "goodbye",
+        "see you",
+        "see you later"
+      ],
+      "small_talk": true
+    },
+    {
+      "id": "T-WHO",
+      "category": "SMALL TALK",
+      "question": "who are you",
+      "answer": "I'm Nia, the Her Health assistant. I give general women's health information from a set of prepared answers. I can't diagnose conditions or recommend medication, and I don't replace a doctor.",
+      "patterns": [
+        "who are you",
+        "what is your name",
+        "are you a doctor",
+        "are you a real person",
+        "are you a bot"
+      ],
+      "small_talk": true
+    }
+  ],
+  "safety_rules": [
+    {
+      "id": "suicide",
+      "answer_id": "139",
+      "patterns": [
+        "suicid\\w*",
+        "kill (my ?self|me)\\b",
+        "end (my life|it all)",
+        "want to die",
+        "wanna die",
+        "don'?t want to (live|be alive)",
+        "(hurt|harm) my ?self",
+        "self[- ]?harm\\w*",
+        "better off dead",
+        "no reason to live"
+      ]
+    },
+    {
+      "id": "breathing",
+      "answer_id": "138",
+      "patterns": [
+        "(can'?t|cannot|struggl\\w*|trouble|difficult\\w*|hard|unable)( to)? breath\\w*",
+        "short(ness)? of breath",
+        "chest pain"
+      ]
+    },
+    {
+      "id": "bleeding",
+      "answer_id": "137",
+      "patterns": [
+        "heavy bleeding",
+        "bleed\\w* (heavily|a lot|too much|badly|non ?stop)",
+        "won'?t stop bleeding",
+        "soak\\w* (through )?(a |one |my )?pad",
+        "h(a)?emorrhag\\w*"
+      ]
+    },
+    {
+      "id": "fetal",
+      "answer_id": "S-FETAL",
+      "patterns": [
+        "(baby|babys|baby's).{0,30}(not|isn'?t|stopped|no|less|reduced|barely|hardly).{0,15}(mov|kick)",
+        "(stopped|not|haven'?t|hasn'?t).{0,12}(feel\\w*).{0,15}(baby|kick|mov)",
+        "reduced (baby )?(movement|movements|kicks)"
+      ]
+    },
+    {
+      "id": "gbv",
+      "answer_id": "S-GBV",
+      "patterns": [
+        "\\brap(e|ed|ist)\\b",
+        "sexual(ly)? (assault|abus)\\w*",
+        "\\b(hit|hits|hitting|beat|beats|beating|slap|slaps|punch|punches|choke|chokes|abuse|abuses|abusing) me\\b",
+        "domestic (violence|abuse)",
+        "i('m| am) (being )?abused",
+        "(not|don'?t feel) safe (at|in) (home|my home)",
+        "forced me to"
+      ]
+    },
+    {
+      "id": "severe_pain",
+      "answer_id": "136",
+      "patterns": [
+        "(severe|unbearable|extreme|worst|terrible|excruciating|intense) ([a-z]+ )?pain",
+        "pain (is |was )?(severe|unbearable|excruciating)"
+      ]
+    },
+    {
+      "id": "faint_seizure",
+      "answer_id": "110",
+      "patterns": [
+        "\\bfaint(ed|ing)\\b",
+        "passed out",
+        "collaps(e|ed)",
+        "seizure\\w*",
+        "convuls\\w*",
+        "\\bfits\\b"
+      ]
+    }
+  ]
+}
