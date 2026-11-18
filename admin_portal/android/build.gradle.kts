@@ -6,9 +6,7 @@ allprojects {
 }
 
 val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
+    rootProject.layout.dir(rootProject.provider { rootProject.file("D:/HerHealth_Build/admin") }).get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
@@ -22,3 +20,5 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+

@@ -1,15 +1,12 @@
+
 """
-routers/health_journey.py
+Health journey management for Her Health.
 
-Backs health_setup_screen.dart and journey_questions_screen.dart. Same
-style as the other routers -- raw psycopg2 queries via
-get_database_connection(), JWT auth via get_current_user().
-
-    from routers.health_journey import router as health_journey_router
-    app.include_router(health_journey_router, prefix="/health-journey", tags=["Health Journey"])
+Supports multiple saved journeys per patient, one active journey,
+journey-specific tracking entries, and journey history.
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg2.extras import Json
 from pydantic import ValidationError
 
@@ -27,15 +24,44 @@ router = APIRouter(prefix="/health-journey", tags=["Health Journey"])
 
 
 def _get_patient_id(cursor, user_id: int) -> int:
-    """Every endpoint here acts on the caller's own patient record."""
-    cursor.execute("SELECT id FROM patients WHERE user_id = %s", (user_id,))
+    cursor.execute(
+        "SELECT id FROM patients WHERE user_id = %s",
+        (user_id,),
+    )
     row = cursor.fetchone()
+
     if not row:
         raise HTTPException(
             status_code=404,
-            detail="No patient profile found for this account. Complete your patient profile first.",
+            detail="No patient profile found. Complete your patient profile first.",
         )
+
     return row["id"]
+
+
+def _journey_response(row):
+    return {
+        "id": row["id"],
+        "patient_id": row["patient_id"],
+        "journey_type": row["journey_type"],
+        "answers": row["answers"],
+        "is_active": row["is_active"],
+        "created_at": str(row["created_at"]),
+        "updated_at": str(row["updated_at"]),
+    }
+
+
+def _entry_response(row):
+    return {
+        "id": row["id"],
+        "journey_id": row["journey_id"],
+        "patient_id": row["patient_id"],
+        "entry_date": str(row["entry_date"]),
+        "pain_level": row["pain_level"],
+        "mood": row["mood"],
+        "data": row["data"],
+        "created_at": str(row["created_at"]),
+    }
 
 
 @router.post("/setup", response_model=HealthJourneyResponse)
@@ -44,74 +70,219 @@ def setup_health_journey(
     current_user: dict = Depends(get_current_user),
 ):
     """
-    Create or update the caller's health journey. A patient has exactly one
-    CURRENT journey -- calling this again (even with a different
-    journey_type) updates the existing row rather than creating a new one.
+    Update the active journey if it has the same type.
+    Otherwise, create a new journey and preserve the previous one.
     """
     model_cls = ANSWER_MODELS[request.journey_type]
+
     try:
         validated_answers = model_cls(**request.answers)
-    except ValidationError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+    except ValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
 
     connection = get_database_connection()
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        patient_id = _get_patient_id(cursor, current_user["user_id"])
+
+        # Serialize journey changes for this patient.
+        cursor.execute(
+            "SELECT id FROM patients WHERE id = %s FOR UPDATE",
+            (patient_id,),
+        )
+
+        cursor.execute(
+            """
+            SELECT id, patient_id, journey_type, answers,
+                   is_active, created_at, updated_at
+            FROM health_journeys
+            WHERE patient_id = %s AND is_active = TRUE
+            FOR UPDATE
+            """,
+            (patient_id,),
+        )
+        active = cursor.fetchone()
+
+        answers = validated_answers.dict()
+
+        if active and active["journey_type"] == request.journey_type:
+            cursor.execute(
+                """
+                UPDATE health_journeys
+                SET answers = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s AND patient_id = %s
+                RETURNING id, patient_id, journey_type, answers,
+                          is_active, created_at, updated_at
+                """,
+                (Json(answers), active["id"], patient_id),
+            )
+            row = cursor.fetchone()
+
+        else:
+            # Deactivate the previous journey before activating the new one.
+            cursor.execute(
+                """
+                UPDATE health_journeys
+                SET is_active = FALSE,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE patient_id = %s AND is_active = TRUE
+                """,
+                (patient_id,),
+            )
+
+            cursor.execute(
+                """
+                INSERT INTO health_journeys
+                    (patient_id, journey_type, answers, is_active)
+                VALUES (%s, %s, %s, TRUE)
+                RETURNING id, patient_id, journey_type, answers,
+                          is_active, created_at, updated_at
+                """,
+                (patient_id, request.journey_type, Json(answers)),
+            )
+            row = cursor.fetchone()
+
+        connection.commit()
+        return _journey_response(row)
+
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+@router.get("/me", response_model=HealthJourneyResponse)
+def get_my_health_journey(
+    current_user: dict = Depends(get_current_user),
+):
+    """Return the caller's active health journey."""
+    connection = get_database_connection()
+
     try:
         cursor = connection.cursor(dictionary=True)
         patient_id = _get_patient_id(cursor, current_user["user_id"])
 
         cursor.execute(
             """
-            INSERT INTO health_journeys (patient_id, journey_type, answers)
-            VALUES (%s, %s, %s)
-            ON CONFLICT (patient_id)
-            DO UPDATE SET
-                journey_type = EXCLUDED.journey_type,
-                answers = EXCLUDED.answers,
-                updated_at = CURRENT_TIMESTAMP
-            RETURNING id, patient_id, journey_type, answers, created_at, updated_at
+            SELECT id, patient_id, journey_type, answers,
+                   is_active, created_at, updated_at
+            FROM health_journeys
+            WHERE patient_id = %s AND is_active = TRUE
             """,
-            (patient_id, request.journey_type, Json(validated_answers.dict())),
+            (patient_id,),
         )
-        row = cursor.fetchone()
-        connection.commit()
 
-        return {
-            "id": row["id"],
-            "patient_id": row["patient_id"],
-            "journey_type": row["journey_type"],
-            "answers": row["answers"],
-            "created_at": str(row["created_at"]),
-            "updated_at": str(row["updated_at"]),
-        }
+        row = cursor.fetchone()
+
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail="No active health journey found.",
+            )
+
+        return _journey_response(row)
+
     finally:
         connection.close()
 
 
-@router.get("/me", response_model=HealthJourneyResponse)
-def get_my_health_journey(current_user: dict = Depends(get_current_user)):
-    """Fetch the caller's current health journey and onboarding answers."""
+@router.get("/history", response_model=list[HealthJourneyResponse])
+def get_health_journey_history(
+    current_user: dict = Depends(get_current_user),
+):
+    """Return all saved journeys belonging to the caller."""
     connection = get_database_connection()
+
     try:
         cursor = connection.cursor(dictionary=True)
         patient_id = _get_patient_id(cursor, current_user["user_id"])
 
         cursor.execute(
-            "SELECT id, patient_id, journey_type, answers, created_at, updated_at "
-            "FROM health_journeys WHERE patient_id = %s",
+            """
+            SELECT id, patient_id, journey_type, answers,
+                   is_active, created_at, updated_at
+            FROM health_journeys
+            WHERE patient_id = %s
+            ORDER BY is_active DESC, created_at DESC, id DESC
+            """,
             (patient_id,),
         )
-        row = cursor.fetchone()
-        if not row:
-            raise HTTPException(status_code=404, detail="No health journey set up yet.")
 
-        return {
-            "id": row["id"],
-            "patient_id": row["patient_id"],
-            "journey_type": row["journey_type"],
-            "answers": row["answers"],
-            "created_at": str(row["created_at"]),
-            "updated_at": str(row["updated_at"]),
-        }
+        return [_journey_response(row) for row in cursor.fetchall()]
+
+    finally:
+        connection.close()
+
+
+@router.post("/{journey_id}/activate", response_model=HealthJourneyResponse)
+def activate_health_journey(
+    journey_id: int,
+    current_user: dict = Depends(get_current_user),
+):
+    """Activate one of the caller's previously saved journeys."""
+    connection = get_database_connection()
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        patient_id = _get_patient_id(cursor, current_user["user_id"])
+
+        # Lock the patient row so simultaneous switches cannot conflict.
+        cursor.execute(
+            "SELECT id FROM patients WHERE id = %s FOR UPDATE",
+            (patient_id,),
+        )
+
+        cursor.execute(
+            """
+            SELECT id
+            FROM health_journeys
+            WHERE id = %s AND patient_id = %s
+            FOR UPDATE
+            """,
+            (journey_id, patient_id),
+        )
+
+        target = cursor.fetchone()
+
+        if not target:
+            raise HTTPException(
+                status_code=404,
+                detail="Journey not found in your health history.",
+            )
+
+        cursor.execute(
+            """
+            UPDATE health_journeys
+            SET is_active = FALSE,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE patient_id = %s AND is_active = TRUE
+            """,
+            (patient_id,),
+        )
+
+        cursor.execute(
+            """
+            UPDATE health_journeys
+            SET is_active = TRUE,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s AND patient_id = %s
+            RETURNING id, patient_id, journey_type, answers,
+                      is_active, created_at, updated_at
+            """,
+            (journey_id, patient_id),
+        )
+
+        row = cursor.fetchone()
+        connection.commit()
+
+        return _journey_response(row)
+
+    except Exception:
+        connection.rollback()
+        raise
     finally:
         connection.close()
 
@@ -121,21 +292,28 @@ def log_health_journey_entry(
     entry: HealthJourneyEntryRequest,
     current_user: dict = Depends(get_current_user),
 ):
-    """
-    Log an ongoing entry against the caller's health journey (e.g. today's
-    mood, pain level, or symptoms). Not called from any screen yet.
-    """
+    """Save a tracking entry against the caller's active journey."""
     connection = get_database_connection()
+
     try:
         cursor = connection.cursor(dictionary=True)
         patient_id = _get_patient_id(cursor, current_user["user_id"])
 
-        cursor.execute("SELECT id FROM health_journeys WHERE patient_id = %s", (patient_id,))
+        cursor.execute(
+            """
+            SELECT id
+            FROM health_journeys
+            WHERE patient_id = %s AND is_active = TRUE
+            """,
+            (patient_id,),
+        )
+
         journey = cursor.fetchone()
+
         if not journey:
             raise HTTPException(
                 status_code=400,
-                detail="Complete health journey setup before logging entries.",
+                detail="Set up an active health journey before logging entries.",
             )
 
         cursor.execute(
@@ -143,7 +321,8 @@ def log_health_journey_entry(
             INSERT INTO health_journey_entries
                 (journey_id, patient_id, entry_date, pain_level, mood, data)
             VALUES (%s, %s, COALESCE(%s, CURRENT_DATE), %s, %s, %s)
-            RETURNING id, journey_id, patient_id, entry_date, pain_level, mood, data, created_at
+            RETURNING id, journey_id, patient_id, entry_date,
+                      pain_level, mood, data, created_at
             """,
             (
                 journey["id"],
@@ -154,54 +333,75 @@ def log_health_journey_entry(
                 Json(entry.data),
             ),
         )
+
         row = cursor.fetchone()
         connection.commit()
 
-        return {
-            "id": row["id"],
-            "journey_id": row["journey_id"],
-            "patient_id": row["patient_id"],
-            "entry_date": str(row["entry_date"]),
-            "pain_level": row["pain_level"],
-            "mood": row["mood"],
-            "data": row["data"],
-            "created_at": str(row["created_at"]),
-        }
+        return _entry_response(row)
+
+    except Exception:
+        connection.rollback()
+        raise
     finally:
         connection.close()
 
 
 @router.get("/entries", response_model=list[HealthJourneyEntryResponse])
-def list_health_journey_entries(current_user: dict = Depends(get_current_user)):
-    """List all logged entries for the caller's health journey, most recent first."""
+def list_health_journey_entries(
+    journey_id: int | None = Query(default=None),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Return entries for the active journey by default.
+    A journey_id may be supplied to view a previous journey's entries.
+    """
     connection = get_database_connection()
+
     try:
         cursor = connection.cursor(dictionary=True)
         patient_id = _get_patient_id(cursor, current_user["user_id"])
 
+        if journey_id is None:
+            cursor.execute(
+                """
+                SELECT id
+                FROM health_journeys
+                WHERE patient_id = %s AND is_active = TRUE
+                """,
+                (patient_id,),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id
+                FROM health_journeys
+                WHERE id = %s AND patient_id = %s
+                """,
+                (journey_id, patient_id),
+            )
+
+        journey = cursor.fetchone()
+
+        if not journey:
+            if journey_id is None:
+                return []
+            raise HTTPException(
+                status_code=404,
+                detail="Journey not found in your health history.",
+            )
+
         cursor.execute(
             """
-            SELECT id, journey_id, patient_id, entry_date, pain_level, mood, data, created_at
+            SELECT id, journey_id, patient_id, entry_date,
+                   pain_level, mood, data, created_at
             FROM health_journey_entries
-            WHERE patient_id = %s
+            WHERE patient_id = %s AND journey_id = %s
             ORDER BY entry_date DESC, created_at DESC
             """,
-            (patient_id,),
+            (patient_id, journey["id"]),
         )
-        rows = cursor.fetchall()
 
-        return [
-            {
-                "id": r["id"],
-                "journey_id": r["journey_id"],
-                "patient_id": r["patient_id"],
-                "entry_date": str(r["entry_date"]),
-                "pain_level": r["pain_level"],
-                "mood": r["mood"],
-                "data": r["data"],
-                "created_at": str(r["created_at"]),
-            }
-            for r in rows
-        ]
+        return [_entry_response(row) for row in cursor.fetchall()]
+
     finally:
         connection.close()

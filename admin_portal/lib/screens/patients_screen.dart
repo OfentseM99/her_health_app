@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../theme/design_a.dart';
@@ -257,7 +257,7 @@ class _PatientsScreenState extends State<PatientsScreen> {
                   ],
                   const SizedBox(height: 8),
                   Text(
-                    'Changing this resets the old journey answers so information from one experience is not carried into another.',
+                    'Switching journeys preserves previously saved journeys and answers. Returning to a previous journey restores its saved information.',
                     style: DA.body(13, color: DA.quiet),
                   ),
                   const SizedBox(height: 20),

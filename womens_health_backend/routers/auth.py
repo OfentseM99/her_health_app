@@ -38,6 +38,7 @@ class RegisterRequest(BaseModel):
     # string "None" in the list, same as any other selection -- the
     # backend doesn't treat it specially.
     address: Optional[str] = None
+    province: Optional[str] = None
     city: Optional[str] = None
     blood_type: Optional[str] = None
     allergies: Optional[List[str]] = None
@@ -267,9 +268,9 @@ def register_user(user: RegisterRequest):
             INSERT INTO patients
             (user_id, first_name, last_name, phone, date_of_birth,
              emergency_contact_name, emergency_contact_phone,
-             address, city, blood_type,
+             address, province, city, blood_type,
              allergies, medical_conditions, current_medications)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 new_user_id,
@@ -280,6 +281,7 @@ def register_user(user: RegisterRequest):
                 user.emergency_contact_name,
                 user.emergency_contact_phone,
                 user.address,
+                user.province,
                 user.city,
                 user.blood_type,
                 Json(user.allergies) if user.allergies is not None else None,
@@ -710,6 +712,7 @@ class UpdateProfileRequest(BaseModel):
     emergency_contact_name: Optional[str] = None
     emergency_contact_phone: Optional[str] = None
     address: Optional[str] = None
+    province: Optional[str] = None
     city: Optional[str] = None
     blood_type: Optional[str] = None
     allergies: Optional[List[str]] = None
@@ -723,7 +726,7 @@ class UpdateProfileRequest(BaseModel):
 _PROFILE_COLUMNS = [
     "first_name", "last_name", "date_of_birth",
     "emergency_contact_name", "emergency_contact_phone",
-    "address", "city", "blood_type",
+    "address", "province", "city", "blood_type",
     "allergies", "medical_conditions", "current_medications",
 ]
 _JSON_COLUMNS = {"allergies", "medical_conditions", "current_medications"}
@@ -750,7 +753,7 @@ def get_me(current_user: dict = Depends(get_current_user)):
             """
             SELECT first_name, last_name, date_of_birth,
                    emergency_contact_name, emergency_contact_phone,
-                   address, city, blood_type,
+                   address, province, city, blood_type,
                    allergies, medical_conditions, current_medications
             FROM patients
             WHERE user_id = %s

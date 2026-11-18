@@ -13,6 +13,7 @@ class MessagesInboxScreen extends StatefulWidget {
 }
 
 class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
+  bool _isLoadingPatients = false;
   bool _isLoading = true;
   String? _errorMessage;
   List<dynamic> _threads = [];
@@ -71,14 +72,176 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MessageThreadScreen(
-          patientId: patientId,
-          patientName: patientName,
-        ),
+        builder: (context) =>
+            MessageThreadScreen(patientId: patientId, patientName: patientName),
       ),
     );
     // Refresh the list on return, in case a reply changed the unread count.
     _loadThreads();
+  }
+
+  Future<void> _startNewMessage() async {
+    if (_isLoadingPatients) return;
+
+    setState(() => _isLoadingPatients = true);
+
+    try {
+      final response = await ApiService.authorizedGet('/patients/all');
+
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+        return;
+      }
+
+      if (response.statusCode != 200) {
+        throw Exception('Could not load the patient directory.');
+      }
+
+      final decoded = jsonDecode(response.body);
+      if (decoded is! List) {
+        throw Exception(
+          'The patient directory returned an unexpected response.',
+        );
+      }
+
+      final patients = decoded
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .where((patient) => patient['id'] != null)
+          .toList();
+
+      if (!mounted) return;
+
+      if (patients.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('There are no patients available.')),
+        );
+        return;
+      }
+
+      final selectedPatient = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (dialogContext) {
+          String searchText = '';
+
+          return StatefulBuilder(
+            builder: (context, setDialogState) {
+              final filteredPatients = patients.where((patient) {
+                final firstName = (patient['first_name'] ?? '').toString();
+                final lastName = (patient['last_name'] ?? '').toString();
+                final fullName = '$firstName $lastName'.toLowerCase();
+                return fullName.contains(searchText.toLowerCase());
+              }).toList();
+
+              return AlertDialog(
+                title: const Text('Start a conversation'),
+                content: SizedBox(
+                  width: 420,
+                  height: 420,
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: const InputDecoration(
+                          hintText: 'Search patients...',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          setDialogState(() => searchText = value);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: filteredPatients.isEmpty
+                            ? const Center(
+                                child: Text('No matching patients found.'),
+                              )
+                            : ListView.separated(
+                                itemCount: filteredPatients.length,
+                                separatorBuilder: (context, index) =>
+                                    const Divider(height: 1),
+                                itemBuilder: (context, index) {
+                                  final patient = filteredPatients[index];
+                                  final firstName =
+                                      (patient['first_name'] ?? '').toString();
+                                  final lastName = (patient['last_name'] ?? '')
+                                      .toString();
+                                  final fullName = '$firstName $lastName'
+                                      .trim();
+
+                                  return ListTile(
+                                    leading: DA.initials(firstName, lastName),
+
+                                    title: Text(
+                                      fullName.isEmpty
+                                          ? 'Unnamed patient'
+                                          : fullName,
+                                    ),
+                                    subtitle: Text(
+                                      (patient['phone'] ?? '').toString(),
+                                    ),
+                                    trailing: const Icon(Icons.chevron_right),
+                                    onTap: () {
+                                      Navigator.of(dialogContext).pop(patient);
+                                    },
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      );
+
+      if (!mounted || selectedPatient == null) return;
+
+      final patientId = int.tryParse(selectedPatient['id'].toString());
+
+      if (patientId == null) {
+        throw Exception('The selected patient has an invalid ID.');
+      }
+
+      final firstName = (selectedPatient['first_name'] ?? '').toString();
+      final lastName = (selectedPatient['last_name'] ?? '').toString();
+      final patientName = '$firstName $lastName'.trim();
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => MessageThreadScreen(
+            patientId: patientId,
+            patientName: patientName.isEmpty ? 'Patient' : patientName,
+          ),
+        ),
+      );
+
+      if (mounted) {
+        await _loadThreads();
+      }
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Unable to start a conversation: $error')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingPatients = false);
+      }
+    }
   }
 
   @override
@@ -125,7 +288,8 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
 
     final unreadTotal = _threads.fold<int>(
       0,
-      (sum, t) => sum + ((t as Map<String, dynamic>)['unread_count'] as int? ?? 0),
+      (sum, t) =>
+          sum + ((t as Map<String, dynamic>)['unread_count'] as int? ?? 0),
     );
 
     return ListView(
@@ -135,7 +299,29 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Patient messages', style: DA.heading(30)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text('Patient messages', style: DA.heading(30)),
+                  ),
+                  const SizedBox(width: 12),
+                  FilledButton.icon(
+                    onPressed: _isLoadingPatients ? null : _startNewMessage,
+                    icon: _isLoadingPatients
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.add_comment_outlined),
+                    label: const Text('New message'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 6),
               Text(
                 unreadTotal == 0
@@ -223,7 +409,11 @@ class _MessagesInboxScreenState extends State<MessagesInboxScreen> {
                     ),
                     child: Text(
                       '$unreadCount',
-                      style: DA.body(12, color: Colors.white, weight: FontWeight.w800),
+                      style: DA.body(
+                        12,
+                        color: Colors.white,
+                        weight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ],

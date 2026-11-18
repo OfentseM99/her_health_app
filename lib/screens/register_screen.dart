@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'email_verification_screen.dart';
 import '../services/auth_service.dart';
 import '../theme/design_a.dart';
@@ -22,7 +23,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
   final TextEditingController addressController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
+  String? selectedProvince;
+  String? selectedCity;
 
   final TextEditingController emergencyNameController = TextEditingController();
   final TextEditingController emergencyPhoneController =
@@ -49,6 +51,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
   // The patient must accept the privacy notice to register (POPIA consent).
   bool _acceptedPrivacy = false;
 
+  static const Map<String, List<String>> citiesByProvince = {
+    'Eastern Cape': [
+      'Bhisho', 'East London', 'Gqeberha (Port Elizabeth)', 'Mthatha',
+      'Komani (Queenstown)', 'Makhanda (Grahamstown)', 'Kariega (Uitenhage)',
+      'Qonce (King William’s Town)', 'Mdantsane', 'Butterworth',
+      'Cradock', 'Graaff-Reinet',
+    ],
+    'Free State': [
+      'Bloemfontein', 'Welkom', 'Bethlehem', 'Kroonstad', 'Sasolburg',
+      'Parys', 'Harrismith', 'Phuthaditjhaba', 'Virginia', 'Bothaville',
+    ],
+    'Gauteng': [
+      'Johannesburg', 'Pretoria (Tshwane)', 'Ekurhuleni', 'Kempton Park',
+      'Benoni', 'Boksburg', 'Germiston', 'Soweto', 'Midrand', 'Sandton',
+      'Roodepoort', 'Randburg', 'Centurion', 'Vereeniging',
+      'Vanderbijlpark', 'Krugersdorp', 'Springs', 'Nigel', 'Alberton',
+    ],
+    'KwaZulu-Natal': [
+      'Durban (eThekwini)', 'Pietermaritzburg', 'Richards Bay', 'Newcastle',
+      'Ladysmith', 'Port Shepstone', 'Empangeni', 'Ballito', 'Pinetown',
+      'Amanzimtoti', 'Ulundi', 'Kokstad',
+    ],
+    'Limpopo': [
+      'Polokwane', 'Tzaneen', 'Thohoyandou', 'Makhado (Louis Trichardt)',
+      'Musina', 'Giyani', 'Lephalale', 'Mokopane', 'Bela-Bela',
+      'Modimolle', 'Phalaborwa', 'Burgersfort',
+    ],
+    'Mpumalanga': [
+      'Mbombela (Nelspruit)', 'Middelburg', 'Secunda', 'eMalahleni (Witbank)',
+      'Standerton', 'Ermelo', 'White River', 'Barberton', 'Hazyview',
+      'Malelane', 'Komatipoort', 'Sabie',
+    ],
+    'Northern Cape': [
+      'Kimberley', 'Upington', 'Kathu', 'Kuruman', 'De Aar', 'Springbok',
+      'Postmasburg', 'Prieska', 'Jan Kempdorp', 'Colesberg',
+    ],
+    'North West': [
+      'Mahikeng', 'Rustenburg', 'Potchefstroom', 'Klerksdorp', 'Brits',
+      'Vryburg', 'Lichtenburg', 'Zeerust', 'Hartbeespoort', 'Orkney',
+      'Stilfontein', 'Mogwase',
+    ],
+    'Western Cape': [
+      'Cape Town', 'Stellenbosch', 'Paarl', 'George', 'Worcester',
+      'Knysna', 'Mossel Bay', 'Oudtshoorn', 'Hermanus', 'Swellendam',
+      'Malmesbury', 'Somerset West', 'Bellville',
+    ],
+  };
   static const List<String> bloodTypes = [
     'A+',
     'A-',
@@ -100,6 +149,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool? obscurePassword,
     VoidCallback? onTogglePassword,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -111,6 +161,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             controller: controller,
             obscureText: password ? (obscurePassword ?? true) : false,
             keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
             style: DA.body(16),
             decoration: DA.input(
               suffix: password
@@ -183,6 +234,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Widget provinceField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DA.label('Province'),
+          DropdownButtonFormField<String>(
+            initialValue: selectedProvince,
+            hint: Text('Select province', style: DA.body(16, color: DA.quiet)),
+            style: DA.body(16),
+            dropdownColor: DA.surface,
+            borderRadius: BorderRadius.circular(16),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: DA.sage),
+            decoration: DA.input(),
+            items: citiesByProvince.keys
+                .map((province) => DropdownMenuItem(
+                      value: province,
+                      child: Text(province),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedProvince = value;
+                selectedCity = null;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget cityField() {
+    final cities = selectedProvince == null
+        ? <String>[]
+        : citiesByProvince[selectedProvince]!;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DA.label('City'),
+          DropdownButtonFormField<String>(
+            initialValue: selectedCity,
+            hint: Text(
+              selectedProvince == null ? 'Select a province first' : 'Select city',
+              style: DA.body(16, color: DA.quiet),
+            ),
+            style: DA.body(16),
+            dropdownColor: DA.surface,
+            borderRadius: BorderRadius.circular(16),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: DA.sage),
+            decoration: DA.input(),
+            items: cities
+                .map((city) => DropdownMenuItem(
+                      value: city,
+                      child: Text(city),
+                    ))
+                .toList(),
+            onChanged: selectedProvince == null
+                ? null
+                : (value) {
+                    setState(() {
+                      selectedCity = value;
+                    });
+                  },
+          ),
+        ],
+      ),
+    );
+  }
   /// Single-select dropdown for blood type.
   Widget bloodTypeField() {
     return Padding(
@@ -341,6 +465,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _showError('Please enter your phone number.');
       return;
     }
+    if (!RegExp(r'^\d+$').hasMatch(phoneController.text.trim())) {
+      _showError('Phone number must contain digits only.');
+      return;
+    }
+    if (selectedProvince == null) {
+      _showError('Please select your province.');
+      return;
+    }
+    if (selectedCity == null) {
+      _showError('Please select your city.');
+      return;
+    }
+    if (emergencyPhoneController.text.trim().isNotEmpty &&
+        !RegExp(r'^\d+$').hasMatch(emergencyPhoneController.text.trim())) {
+      _showError('Emergency contact number must contain digits only.');
+      return;
+    }
     if (passwordController.text.isEmpty) {
       _showError('Please enter a password.');
       return;
@@ -376,7 +517,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         emergencyContactName: emergencyNameController.text,
         emergencyContactPhone: emergencyPhoneController.text,
         address: addressController.text,
-        city: cityController.text,
+        province: selectedProvince,
+        city: selectedCity,
         bloodType: selectedBloodType,
         allergies:
             _finalizeSelection(selectedAllergies, allergyOtherController),
@@ -450,7 +592,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   inputField('Email address', emailController,
                       keyboardType: TextInputType.emailAddress),
                   inputField('Phone number', phoneController,
-                      keyboardType: TextInputType.phone),
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
                   inputField(
                     'Password',
                     passwordController,
@@ -480,11 +623,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   sectionTitle('Contact information'),
                   inputField('Street address', addressController),
-                  inputField('City', cityController),
+                  provinceField(),
+                  cityField(),
                   inputField('Emergency contact name', emergencyNameController),
                   inputField(
                       'Emergency contact number', emergencyPhoneController,
-                      keyboardType: TextInputType.phone),
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly]),
                   sectionTitle('Health information', note: 'Optional'),
                   bloodTypeField(),
                   multiSelectField(

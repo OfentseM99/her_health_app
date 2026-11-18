@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../services/api_service.dart';
 import '../services/passkey_service.dart';
@@ -33,7 +35,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _checkDeviceUnlock() async {
     try {
-      final available = await PasskeyService.isAvailable();
+      bool available = false;
+
+      if (kIsWeb) {
+        available = await PasskeyService.isAvailable();
+      } else {
+        final enabled = await ApiService.isBiometricUnlockEnabled();
+
+        if (enabled) {
+          final auth = LocalAuthentication();
+          final supported = await auth.isDeviceSupported();
+          final biometrics = await auth.getAvailableBiometrics();
+          available = supported && biometrics.isNotEmpty;
+        }
+      }
 
       if (!mounted) return;
 
@@ -48,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
       });
     }
   }
-
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -84,15 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleDeviceUnlock() async {
-    final email = _emailController.text.trim();
-
-    if (email.isEmpty) {
-      setState(() {
-        _errorMessage = 'Enter your staff email first, then use device unlock.';
-      });
-      return;
-    }
-
     if (!_deviceUnlockAvailable) {
       setState(() {
         _errorMessage =
@@ -107,6 +112,33 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      if (!kIsWeb) {
+        final authenticated = await ApiService.authenticateBiometricSession();
+
+        if (!mounted) return;
+
+        if (authenticated) {
+          _openDashboard();
+        } else {
+          setState(() {
+            _errorMessage =
+                'Biometric sign-in could not be completed. Please use your staff password.';
+            _deviceUnlockAvailable = false;
+          });
+        }
+
+        return;
+      }
+
+      final email = _emailController.text.trim();
+
+      if (email.isEmpty) {
+        setState(() {
+          _errorMessage = 'Enter your staff email first, then use device unlock.';
+        });
+        return;
+      }
+
       final options = await ApiService.beginPasskeyLogin(email: email);
 
       final credentialJson = await PasskeyService.authenticate(
@@ -153,7 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     }
   }
-
   void _openDashboard() {
     Navigator.pushReplacement(
       context,
@@ -196,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Image.asset(
                         'assets/images/logo/logo.png',
                         height: 44,
-                        errorBuilder: (_, _, _) =>
+                        errorBuilder: (context, error, stackTrace) =>
                             const Icon(Icons.spa, size: 44, color: DA.rose),
                       ),
                     ),
@@ -335,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
 
                     Text(
-                      'Use Touch ID, Face ID, fingerprint or your device unlock method.',
+                      (kIsWeb ? 'Use your registered device passkey.' : 'Use your enrolled fingerprint or face recognition.'),
                       textAlign: TextAlign.center,
                       style: DA.body(12, color: DA.quiet),
                     ),
@@ -349,3 +380,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
 
 /// An error from the backend, carrying the HTTP status code so callers can
 /// react to specific cases (e.g. an unverified account at login).
@@ -32,6 +34,82 @@ class AuthService {
   static String? firstName;
 
   static const _tokenKey = 'patient_access_token';
+  static const _biometricEnabledKey = 'patient_biometric_enabled';
+
+  static final FlutterSecureStorage _secureStorage =
+      const FlutterSecureStorage();
+
+  static Future<bool> isBiometricUnlockEnabled() async {
+    return await _secureStorage.read(key: _biometricEnabledKey) == 'true';
+  }
+
+  static Future<bool> enableBiometricUnlock() async {
+    final token = accessToken;
+
+    if (token == null || token.isEmpty) {
+      throw AuthException('Please log in before enabling device unlock.');
+    }
+
+    final localAuth = LocalAuthentication();
+    final biometrics = await localAuth.getAvailableBiometrics();
+
+    if (biometrics.isEmpty) return false;
+
+    final authenticated = await localAuth.authenticate(
+      localizedReason:
+          'Verify your identity to enable Her Health device unlock.',
+      biometricOnly: true,
+      persistAcrossBackgrounding: true,
+    );
+
+    if (!authenticated) return false;
+
+    await _secureStorage.write(key: _tokenKey, value: token);
+    await _secureStorage.write(key: _biometricEnabledKey, value: 'true');
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+
+    return true;
+  }
+
+  static Future<bool> authenticateBiometricSession() async {
+    if (!await isBiometricUnlockEnabled()) return false;
+
+    final localAuth = LocalAuthentication();
+    final authenticated = await localAuth.authenticate(
+      localizedReason: 'Authenticate to access your Her Health account.',
+      biometricOnly: true,
+      persistAcrossBackgrounding: true,
+    );
+
+    if (!authenticated) return false;
+
+    final token = await _secureStorage.read(key: _tokenKey);
+
+    if (token == null || token.isEmpty) {
+      await _secureStorage.delete(key: _biometricEnabledKey);
+      return false;
+    }
+
+    accessToken = token;
+
+    try {
+      final me = await getMe();
+      final profile = me['profile'];
+      firstName = (profile is Map) ? profile['first_name'] as String? : null;
+      return true;
+    } on AuthException catch (e) {
+      if (e.statusCode == 401 || e.statusCode == 403) {
+        accessToken = null;
+        firstName = null;
+        await _secureStorage.delete(key: _tokenKey);
+        await _secureStorage.delete(key: _biometricEnabledKey);
+        return false;
+      }
+      rethrow;
+    }
+  }
 
   // ===========================================================
   // Session
@@ -44,43 +122,40 @@ class AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_tokenKey);
-    } catch (e) {
-      // ignore: avoid_print
-      print('AUTH STORAGE: could not clear saved login: $e');
-    }
+    } catch (_) {}
+
+    try {
+      await _secureStorage.delete(key: _tokenKey);
+      await _secureStorage.delete(key: _biometricEnabledKey);
+    } catch (_) {}
   }
 
   static Future<bool> restoreSession() async {
+    if (await isBiometricUnlockEnabled()) return false;
+
     String? saved;
 
     try {
       final prefs = await SharedPreferences.getInstance();
       saved = prefs.getString(_tokenKey);
-    } catch (e) {
-      // ignore: avoid_print
-      print('AUTH STORAGE: could not read saved login: $e');
+    } catch (_) {
       saved = null;
     }
 
-    if (saved == null || saved.isEmpty) {
-      return false;
-    }
+    if (saved == null || saved.isEmpty) return false;
 
     accessToken = saved;
 
     try {
       final me = await getMe();
       final profile = me['profile'];
-
       firstName = (profile is Map) ? profile['first_name'] as String? : null;
-
       return true;
     } on AuthException catch (e) {
       if (e.statusCode == 401 || e.statusCode == 403) {
         await logout();
         return false;
       }
-
       return true;
     }
   }
@@ -89,17 +164,19 @@ class AuthService {
     accessToken = token;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_tokenKey, token);
-    } catch (e) {
-      // ignore: avoid_print
-      print('AUTH STORAGE: could not save login: $e');
-    }
+      if (await isBiometricUnlockEnabled()) {
+        await _secureStorage.write(key: _tokenKey, value: token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(_tokenKey);
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_tokenKey, token);
+      }
+    } catch (_) {}
 
     try {
       final me = await getMe();
       final profile = me['profile'];
-
       firstName = (profile is Map) ? profile['first_name'] as String? : null;
     } catch (_) {
       firstName = null;
@@ -119,6 +196,7 @@ class AuthService {
     String? emergencyContactName,
     String? emergencyContactPhone,
     String? address,
+    String? province,
     String? city,
     String? bloodType,
     List<String>? allergies,
@@ -156,6 +234,10 @@ class AuthService {
 
     if (address != null && address.trim().isNotEmpty) {
       body['address'] = address.trim();
+    }
+
+    if (province != null && province.trim().isNotEmpty) {
+      body['province'] = province.trim();
     }
 
     if (city != null && city.trim().isNotEmpty) {
@@ -347,14 +429,35 @@ class AuthService {
     }
   }
 
+  static Future<List<dynamic>> getHealthJourneyHistory() async {
+    final data = await _authorizedGetRaw('/health-journey/history');
+
+    return data is List ? data : [];
+  }
+
+  static Future<Map<String, dynamic>> activateHealthJourney(
+    int journeyId,
+  ) async {
+    final data = await _authorizedPostRaw(
+      '/health-journey/$journeyId/activate',
+      {},
+    );
+
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
+
   // ===========================================================
   // Health tracking
   // ===========================================================
 
-  static Future<List<dynamic>> getHealthTrackingEntries() async {
-    final data = await _authorizedGetRaw(
-      '/health-journey/entries',
-    );
+  static Future<List<dynamic>> getHealthTrackingEntries({
+    int? journeyId,
+  }) async {
+    final path = journeyId == null
+        ? '/health-journey/entries'
+        : '/health-journey/entries?journey_id=$journeyId';
+
+    final data = await _authorizedGetRaw(path);
 
     return data is List ? data : [];
   }
@@ -375,7 +478,6 @@ class AuthService {
       },
     );
   }
-
   // ===========================================================
   // Appointments
   // ===========================================================
@@ -436,6 +538,11 @@ class AuthService {
   // ===========================================================
   // Chat / Nia
   // ===========================================================
+
+  static Future<List<dynamic>> getNiaTopics() async {
+    final data = await _authorizedGetRaw('/chat/topics');
+    return data is List ? data : [];
+  }
 
   static Future<List<dynamic>> sendChatMessage(
     String message,

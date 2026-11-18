@@ -12,10 +12,59 @@ class HealthProfileScreen extends StatefulWidget {
 }
 
 class _HealthProfileScreenState extends State<HealthProfileScreen> {
+  static const Map<String, List<String>> citiesByProvince = {
+    'Eastern Cape': [
+      'Bhisho', 'East London', 'Gqeberha (Port Elizabeth)', 'Mthatha',
+      'Komani (Queenstown)', 'Makhanda (Grahamstown)', 'Kariega (Uitenhage)',
+      'Qonce (King Williamâ€™s Town)', 'Mdantsane', 'Butterworth',
+      'Cradock', 'Graaff-Reinet',
+    ],
+    'Free State': [
+      'Bloemfontein', 'Welkom', 'Bethlehem', 'Kroonstad', 'Sasolburg',
+      'Parys', 'Harrismith', 'Phuthaditjhaba', 'Virginia', 'Bothaville',
+    ],
+    'Gauteng': [
+      'Johannesburg', 'Pretoria (Tshwane)', 'Ekurhuleni', 'Kempton Park',
+      'Benoni', 'Boksburg', 'Germiston', 'Soweto', 'Midrand', 'Sandton',
+      'Roodepoort', 'Randburg', 'Centurion', 'Vereeniging',
+      'Vanderbijlpark', 'Krugersdorp', 'Springs', 'Nigel', 'Alberton',
+    ],
+    'KwaZulu-Natal': [
+      'Durban (eThekwini)', 'Pietermaritzburg', 'Richards Bay', 'Newcastle',
+      'Ladysmith', 'Port Shepstone', 'Empangeni', 'Ballito', 'Pinetown',
+      'Amanzimtoti', 'Ulundi', 'Kokstad',
+    ],
+    'Limpopo': [
+      'Polokwane', 'Tzaneen', 'Thohoyandou', 'Makhado (Louis Trichardt)',
+      'Musina', 'Giyani', 'Lephalale', 'Mokopane', 'Bela-Bela',
+      'Modimolle', 'Phalaborwa', 'Burgersfort',
+    ],
+    'Mpumalanga': [
+      'Mbombela (Nelspruit)', 'Middelburg', 'Secunda', 'eMalahleni (Witbank)',
+      'Standerton', 'Ermelo', 'White River', 'Barberton', 'Hazyview',
+      'Malelane', 'Komatipoort', 'Sabie',
+    ],
+    'Northern Cape': [
+      'Kimberley', 'Upington', 'Kathu', 'Kuruman', 'De Aar', 'Springbok',
+      'Postmasburg', 'Prieska', 'Jan Kempdorp', 'Colesberg',
+    ],
+    'North West': [
+      'Mahikeng', 'Rustenburg', 'Potchefstroom', 'Klerksdorp', 'Brits',
+      'Vryburg', 'Lichtenburg', 'Zeerust', 'Hartbeespoort', 'Orkney',
+      'Stilfontein', 'Mogwase',
+    ],
+    'Western Cape': [
+      'Cape Town', 'Stellenbosch', 'Paarl', 'George', 'Worcester',
+      'Knysna', 'Mossel Bay', 'Oudtshoorn', 'Hermanus', 'Swellendam',
+      'Malmesbury', 'Somerset West', 'Bellville',
+    ],
+  };
+
+  String? selectedProvince;
+  String? selectedCity;
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final addressController = TextEditingController();
-  final cityController = TextEditingController();
   final emergencyNameController = TextEditingController();
   final emergencyPhoneController = TextEditingController();
   final allergiesController = TextEditingController();
@@ -104,7 +153,12 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
         firstNameController.text = (profile['first_name'] as String?) ?? '';
         lastNameController.text = (profile['last_name'] as String?) ?? '';
         addressController.text = (profile['address'] as String?) ?? '';
-        cityController.text = (profile['city'] as String?) ?? '';
+        selectedProvince = (profile['province'] as String?) ?? '';
+        if (selectedProvince!.isEmpty || !citiesByProvince.containsKey(selectedProvince)) selectedProvince = null;
+        selectedCity = (profile['city'] as String?) ?? '';
+        if (selectedCity!.isEmpty || selectedProvince == null) {
+          selectedCity = null;
+        }
         emergencyNameController.text =
             (profile['emergency_contact_name'] as String?) ?? '';
         emergencyPhoneController.text =
@@ -159,7 +213,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
       'first_name': firstNameController.text.trim(),
       'last_name': lastNameController.text.trim(),
       'address': _orNull(addressController.text),
-      'city': _orNull(cityController.text),
+      'province': selectedProvince,
+      'city': selectedCity,
       'emergency_contact_name': _orNull(emergencyNameController.text),
       'emergency_contact_phone': _orNull(emergencyPhoneController.text),
       'allergies': _splitList(allergiesController.text),
@@ -238,6 +293,85 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
     );
   }
 
+  Widget _provinceField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DA.label('Province'),
+          DropdownButtonFormField<String>(
+            initialValue: selectedProvince,
+            hint: Text('Select province', style: DA.body(16, color: DA.quiet)),
+            style: DA.body(16),
+            dropdownColor: DA.surface,
+            borderRadius: BorderRadius.circular(16),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: DA.sage),
+            decoration: DA.input(),
+            items: citiesByProvince.keys
+                .map((province) => DropdownMenuItem(
+                      value: province,
+                      child: Text(province),
+                    ))
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                selectedProvince = value;
+                selectedCity = null;
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _cityField() {
+    final cities = selectedProvince == null
+        ? <String>[]
+        : List<String>.from(citiesByProvince[selectedProvince]!);
+
+    // Keep an existing saved city visible even if it is not in the
+    // common-location list, so saving the profile does not discard it.
+    if (selectedCity != null && !cities.contains(selectedCity)) {
+      cities.add(selectedCity!);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DA.label('City'),
+          DropdownButtonFormField<String>(
+            initialValue: selectedCity,
+            hint: Text(
+              selectedProvince == null ? 'Select a province first' : 'Select city',
+              style: DA.body(16, color: DA.quiet),
+            ),
+            style: DA.body(16),
+            dropdownColor: DA.surface,
+            borderRadius: BorderRadius.circular(16),
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: DA.sage),
+            decoration: DA.input(),
+            items: cities
+                .map((city) => DropdownMenuItem(
+                      value: city,
+                      child: Text(city),
+                    ))
+                .toList(),
+            onChanged: selectedProvince == null
+                ? null
+                : (value) {
+                    setState(() {
+                      selectedCity = value;
+                    });
+                  },
+          ),
+        ],
+      ),
+    );
+  }
   Widget _sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 14),
@@ -332,7 +466,8 @@ class _HealthProfileScreenState extends State<HealthProfileScreen> {
               ),
               _sectionTitle('Contact'),
               _field('Street address', addressController),
-              _field('City', cityController),
+              _provinceField(),
+              _cityField(),
               _field('Emergency contact name', emergencyNameController),
               _field('Emergency contact number', emergencyPhoneController),
               _sectionTitle('Health'),

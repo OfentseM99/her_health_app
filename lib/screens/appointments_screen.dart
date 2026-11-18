@@ -58,8 +58,18 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   static const _months = [
-    'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+    'JAN',
+    'FEB',
+    'MAR',
+    'APR',
+    'MAY',
+    'JUN',
+    'JUL',
+    'AUG',
+    'SEP',
+    'OCT',
+    'NOV',
+    'DEC',
   ];
   static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -140,8 +150,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           Center(
             child: OutlinedButton(
               style: DA.outline().copyWith(
-                minimumSize: const WidgetStatePropertyAll(Size(140, 48)),
-              ),
+                    minimumSize: const WidgetStatePropertyAll(Size(140, 48)),
+                  ),
               onPressed: _loadAppointments,
               child: const Text('Try again'),
             ),
@@ -197,7 +207,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                   children: [
                     Text(
                       date == null ? '' : _months[date.month - 1],
-                      style: DA.body(12, color: badgeInk, weight: FontWeight.w700),
+                      style:
+                          DA.body(12, color: badgeInk, weight: FontWeight.w700),
                     ),
                     Text(
                       date == null ? '?' : '${date.day}',
@@ -222,7 +233,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: badgeBg,
                             borderRadius: BorderRadius.circular(12),
@@ -231,7 +243,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                             status.isEmpty
                                 ? status
                                 : status[0].toUpperCase() + status.substring(1),
-                            style: DA.body(12, color: badgeInk, weight: FontWeight.w700),
+                            style: DA.body(12,
+                                color: badgeInk, weight: FontWeight.w700),
                           ),
                         ),
                       ],
@@ -324,7 +337,8 @@ class _RequestAppointmentSheetState extends State<_RequestAppointmentSheet> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red.shade400),
+        SnackBar(
+            content: Text(e.toString()), backgroundColor: Colors.red.shade400),
       );
     } finally {
       if (mounted) {
@@ -337,7 +351,7 @@ class _RequestAppointmentSheetState extends State<_RequestAppointmentSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final two = (int n) => n.toString().padLeft(2, '0');
+    String two(int n) => n.toString().padLeft(2, '0');
 
     return Padding(
       padding: EdgeInsets.only(
@@ -358,13 +372,15 @@ class _RequestAppointmentSheetState extends State<_RequestAppointmentSheet> {
             onTap: _pickDate,
             child: InputDecorator(
               decoration: DA.input(
-                suffix: const Icon(Icons.calendar_today_outlined, color: DA.sage),
+                suffix:
+                    const Icon(Icons.calendar_today_outlined, color: DA.sage),
               ),
               child: Text(
                 selectedDate == null
                     ? 'Choose a date'
                     : '${two(selectedDate!.day)}/${two(selectedDate!.month)}/${selectedDate!.year}',
-                style: DA.body(16, color: selectedDate == null ? DA.quiet : DA.ink),
+                style: DA.body(16,
+                    color: selectedDate == null ? DA.quiet : DA.ink),
               ),
             ),
           ),
@@ -378,8 +394,11 @@ class _RequestAppointmentSheetState extends State<_RequestAppointmentSheet> {
                 suffix: const Icon(Icons.access_time_rounded, color: DA.sage),
               ),
               child: Text(
-                selectedTime == null ? 'Choose a time' : selectedTime!.format(context),
-                style: DA.body(16, color: selectedTime == null ? DA.quiet : DA.ink),
+                selectedTime == null
+                    ? 'Choose a time'
+                    : selectedTime!.format(context),
+                style: DA.body(16,
+                    color: selectedTime == null ? DA.quiet : DA.ink),
               ),
             ),
           ),
@@ -394,7 +413,8 @@ class _RequestAppointmentSheetState extends State<_RequestAppointmentSheet> {
           ElevatedButton(
             style: DA.primary(),
             onPressed: _isSubmitting ? null : _submit,
-            child: _isSubmitting ? DA.buttonSpinner : const Text('Send request'),
+            child:
+                _isSubmitting ? DA.buttonSpinner : const Text('Send request'),
           ),
         ],
       ),

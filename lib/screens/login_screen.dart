@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../services/auth_service.dart';
 import '../services/passkey_service.dart';
 import '../theme/design_a.dart';
-import 'chatbot_screen.dart';
+import 'dashboard_screen.dart';
 import 'email_verification_screen.dart';
 import 'forgot_password_screen.dart';
 import 'health_setup_screen.dart';
@@ -26,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _deviceLoading = false;
   bool _deviceUnlockAvailable = false;
+  bool _nativeBiometric = false;
 
   @override
   void initState() {
@@ -42,12 +45,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _checkDeviceUnlock() async {
     try {
-      final available = await PasskeyService.isAvailable();
+      bool available = false;
+      final nativeBiometric = !kIsWeb;
+
+      if (nativeBiometric) {
+        final enabled = await AuthService.isBiometricUnlockEnabled();
+        final localAuth = LocalAuthentication();
+
+        if (enabled && await localAuth.isDeviceSupported()) {
+          final canCheck = await localAuth.canCheckBiometrics;
+          final biometrics = await localAuth.getAvailableBiometrics();
+          available = canCheck && biometrics.isNotEmpty;
+        }
+      } else {
+        available = await PasskeyService.isAvailable();
+      }
 
       if (!mounted) return;
 
       setState(() {
         _deviceUnlockAvailable = available;
+        _nativeBiometric = nativeBiometric;
       });
     } catch (_) {
       if (!mounted) return;
@@ -67,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => existingJourney != null
-            ? const ChatbotScreen()
+            ? const DashboardScreen()
             : const HealthSetupScreen(),
       ),
     );
@@ -113,19 +131,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleDeviceUnlock() async {
-    final email = emailController.text.trim();
-
-    if (email.isEmpty) {
-      _showError(
-        'Enter your email address first, then use device unlock.',
-      );
+    if (!_deviceUnlockAvailable) {
+      _showError('Device unlock is not available or has not been enabled.');
       return;
     }
 
-    if (!_deviceUnlockAvailable) {
-      _showError(
-        'Device unlock is not available on this device or browser.',
-      );
+    final email = emailController.text.trim();
+
+    if (!_nativeBiometric && email.isEmpty) {
+      _showError('Enter your email address first, then use device unlock.');
       return;
     }
 
@@ -134,30 +148,39 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final options = await AuthService.beginPasskeyLogin(
-        email: email,
-        portal: 'patient',
-      );
+      if (_nativeBiometric) {
+        final authenticated = await AuthService.authenticateBiometricSession();
 
-      final credentialJson = await PasskeyService.authenticate(
-        jsonEncode(options),
-      );
+        if (!authenticated) {
+          _showError(
+            'Biometric sign-in could not be completed. Please use your password.',
+          );
+          return;
+        }
+      } else {
+        final options = await AuthService.beginPasskeyLogin(
+          email: email,
+          portal: 'patient',
+        );
 
-      final decoded = jsonDecode(credentialJson);
+        final credentialJson = await PasskeyService.authenticate(
+          jsonEncode(options),
+        );
 
-      if (decoded is! Map) {
-        throw AuthException(
-          'The device returned an invalid credential.',
+        final decoded = jsonDecode(credentialJson);
+
+        if (decoded is! Map) {
+          throw AuthException('The device returned an invalid credential.');
+        }
+
+        final credential = Map<String, dynamic>.from(decoded);
+
+        await AuthService.finishPasskeyLogin(
+          email: email,
+          portal: 'patient',
+          credential: credential,
         );
       }
-
-      final credential = Map<String, dynamic>.from(decoded);
-
-      await AuthService.finishPasskeyLogin(
-        email: email,
-        portal: 'patient',
-        credential: credential,
-      );
 
       if (!mounted) return;
 
@@ -165,14 +188,15 @@ class _LoginScreenState extends State<LoginScreen> {
     } on AuthException catch (e) {
       _showError(e.message);
     } catch (e) {
-      final message = e.toString();
+      final message = e.toString().toLowerCase();
 
-      if (message.toLowerCase().contains('notallowed') ||
-          message.toLowerCase().contains('cancel')) {
+      if (message.contains('notallowed') ||
+          message.contains('cancel') ||
+          message.contains('usercanceled')) {
         _showError('Device unlock was cancelled.');
       } else {
         _showError(
-          'Device unlock failed. You can still use your password.',
+          'Device unlock failed. You can still sign in with your password.',
         );
       }
     } finally {
@@ -391,7 +415,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Use Face ID, Touch ID, fingerprint or your device unlock method.',
+                      (_nativeBiometric
+                          ? 'Use your enrolled fingerprint or face recognition.'
+                          : 'Use your registered device passkey.'),
                       textAlign: TextAlign.center,
                       style: DA.body(
                         12,

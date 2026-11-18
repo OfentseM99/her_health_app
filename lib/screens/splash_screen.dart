@@ -3,7 +3,8 @@ import '../theme/design_a.dart';
 import '../services/auth_service.dart';
 import 'welcome_screen.dart';
 import 'health_setup_screen.dart';
-import 'chatbot_screen.dart';
+import 'dashboard_screen.dart';
+import 'login_screen.dart';
 
 /// First screen the app shows. While the logo is on screen it checks for a
 /// saved login, then sends the patient to the right place:
@@ -31,19 +32,25 @@ class _SplashScreenState extends State<SplashScreen> {
     Widget destination = const WelcomeScreen();
 
     try {
-      final loggedIn = await AuthService.restoreSession();
+      final biometricEnabled = await AuthService.isBiometricUnlockEnabled();
 
-      if (loggedIn) {
-        Map<String, dynamic>? journey;
-        try {
-          journey = await AuthService.getExistingHealthJourney();
-        } catch (_) {
-          journey = null;
+      if (biometricEnabled) {
+        destination = const LoginScreen();
+      } else {
+        final loggedIn = await AuthService.restoreSession();
+
+        if (loggedIn) {
+          Map<String, dynamic>? journey;
+          try {
+            journey = await AuthService.getExistingHealthJourney();
+          } catch (_) {
+            journey = null;
+          }
+
+          destination = journey != null
+              ? const DashboardScreen()
+              : const HealthSetupScreen();
         }
-
-        destination = journey != null
-            ? const ChatbotScreen()
-            : const HealthSetupScreen();
       }
     } catch (_) {
       // Anything unexpected: fall back to the normal welcome flow.

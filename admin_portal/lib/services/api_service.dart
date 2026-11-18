@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -13,6 +14,7 @@ class ApiService {
 
   static const _tokenKey = 'admin_access_token';
   static const _roleKey = 'admin_role_id';
+  static const _biometricEnabledKey = 'admin_biometric_enabled';
 
   static const List<int> staffRoleIds = [2, 3, 4];
 
@@ -167,10 +169,82 @@ class ApiService {
     return stored == null ? null : int.tryParse(stored);
   }
 
+  static Future<bool> isBiometricUnlockEnabled() async {
+    return await _storage.read(key: _biometricEnabledKey) == 'true';
+  }
+
+  static Future<bool> enableBiometricUnlock() async {
+    final token = await getToken();
+    final roleId = await getRoleId();
+
+    if (token == null ||
+        token.isEmpty ||
+        roleId == null ||
+        !staffRoleIds.contains(roleId)) {
+      throw Exception('Please log in with your staff account first.');
+    }
+
+    final auth = LocalAuthentication();
+    final supported = await auth.isDeviceSupported();
+    final biometrics = await auth.getAvailableBiometrics();
+
+    if (!supported || biometrics.isEmpty) return false;
+
+    final authenticated = await auth.authenticate(
+      localizedReason:
+          'Verify your identity to enable Her Health admin unlock.',
+      biometricOnly: true,
+      persistAcrossBackgrounding: true,
+    );
+
+    if (!authenticated) return false;
+
+    await _storage.write(key: _biometricEnabledKey, value: 'true');
+    return true;
+  }
+
+  static Future<bool> authenticateBiometricSession() async {
+    if (!await isBiometricUnlockEnabled()) return false;
+
+    final auth = LocalAuthentication();
+    final supported = await auth.isDeviceSupported();
+    final biometrics = await auth.getAvailableBiometrics();
+
+    if (!supported || biometrics.isEmpty) return false;
+
+    final authenticated = await auth.authenticate(
+      localizedReason: 'Authenticate to access the Her Health admin portal.',
+      biometricOnly: true,
+      persistAcrossBackgrounding: true,
+    );
+
+    if (!authenticated) return false;
+
+    final token = await getToken();
+    final roleId = await getRoleId();
+
+    if (token == null ||
+        token.isEmpty ||
+        roleId == null ||
+        !staffRoleIds.contains(roleId)) {
+      await logout();
+      return false;
+    }
+
+    final response = await authorizedGet('/patients/all');
+
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      await logout();
+      return false;
+    }
+
+    return response.statusCode == 200;
+  }
+
   static Future<void> logout() async {
     await _storage.delete(key: _tokenKey);
-
     await _storage.delete(key: _roleKey);
+    await _storage.delete(key: _biometricEnabledKey);
   }
 
   // ===========================================================

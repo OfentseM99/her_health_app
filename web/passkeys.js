@@ -1,4 +1,4 @@
-window.herHealthPasskeys = {
+﻿window.herHealthPasskeys = {
   isAvailable: async function () {
     try {
       if (!window.PublicKeyCredential) return false;
@@ -8,6 +8,65 @@ window.herHealthPasskeys = {
     } catch (_) {
       return false;
     }
+  },
+
+  bufferToBase64Url: function (buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+
+    return btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "");
+  },
+
+  serializeCredential: function (credential) {
+    const response = credential.response;
+
+    const result = {
+      id: credential.id,
+      rawId: this.bufferToBase64Url(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: this.bufferToBase64Url(
+          response.clientDataJSON
+        ),
+      },
+      clientExtensionResults:
+        credential.getClientExtensionResults
+          ? credential.getClientExtensionResults()
+          : {},
+    };
+
+    if (credential.authenticatorAttachment) {
+      result.authenticatorAttachment =
+        credential.authenticatorAttachment;
+    }
+
+    if ("attestationObject" in response) {
+      result.response.attestationObject =
+        this.bufferToBase64Url(response.attestationObject);
+
+      if (response.getTransports) {
+        result.response.transports = response.getTransports();
+      }
+    } else {
+      result.response.authenticatorData =
+        this.bufferToBase64Url(response.authenticatorData);
+
+      result.response.signature =
+        this.bufferToBase64Url(response.signature);
+
+      result.response.userHandle = response.userHandle
+        ? this.bufferToBase64Url(response.userHandle)
+        : null;
+    }
+
+    return JSON.stringify(result);
   },
 
   register: async function (optionsJson) {
@@ -42,7 +101,7 @@ window.herHealthPasskeys = {
       throw new Error("No device credential was created.");
     }
 
-    return JSON.stringify(credential);
+    return this.serializeCredential(credential);
   },
 
   authenticate: async function (optionsJson) {
@@ -73,7 +132,7 @@ window.herHealthPasskeys = {
       throw new Error("Device authentication was cancelled.");
     }
 
-    return JSON.stringify(credential);
+    return this.serializeCredential(credential);
   },
 
   base64UrlToBuffer: function (value) {

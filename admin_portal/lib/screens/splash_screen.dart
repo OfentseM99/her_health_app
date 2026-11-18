@@ -18,9 +18,12 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(milliseconds: 2500), () async {
       if (!mounted) return;
 
+      final biometricEnabled = await ApiService.isBiometricUnlockEnabled();
       final token = await ApiService.getToken();
       final roleId = await ApiService.getRoleId();
-      final isLoggedIn = token != null &&
+      final isLoggedIn =
+          !biometricEnabled &&
+          token != null &&
           roleId != null &&
           ApiService.staffRoleIds.contains(roleId);
 
@@ -52,12 +55,16 @@ class _SplashScreenState extends State<SplashScreen> {
                 Image.asset(
                   'assets/images/logo/logo.png',
                   height: 120,
-                  errorBuilder: (_, __, ___) => Icon(Icons.spa, size: 120, color: DA.rose),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.spa, size: 120, color: DA.rose),
                 ),
                 const SizedBox(height: 24),
                 Text('Her Health', style: DA.heading(36)),
                 const SizedBox(height: 6),
-                Text('Admin portal', style: DA.body(17, color: DA.sage, weight: FontWeight.w700)),
+                Text(
+                  'Admin portal',
+                  style: DA.body(17, color: DA.sage, weight: FontWeight.w700),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   "Inspired by Dr. Mbokota's practice.",
@@ -68,7 +75,10 @@ class _SplashScreenState extends State<SplashScreen> {
                 const SizedBox(
                   height: 24,
                   width: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: DA.rose),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: DA.rose,
+                  ),
                 ),
                 const SizedBox(height: 40),
                 Text('Version 1.0', style: DA.body(12, color: DA.quiet)),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../services/auth_service.dart';
@@ -56,20 +57,34 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context,
   ) async {
     try {
-      final available =
-          await PasskeyService.isAvailable();
+      final nativeBiometric = !kIsWeb;
 
-      if (!available) {
+      if (nativeBiometric && await AuthService.isBiometricUnlockEnabled()) {
         if (!context.mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Device unlock is not available on this device or browser.',
-            ),
+            content: Text('Biometric device unlock is already enabled.'),
           ),
         );
         return;
+      }
+
+      if (!nativeBiometric) {
+        final available = await PasskeyService.isAvailable();
+
+        if (!available) {
+          if (!context.mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Passkeys are not available on this device or browser.',
+              ),
+            ),
+          );
+          return;
+        }
       }
 
       if (!context.mounted) return;
@@ -83,47 +98,72 @@ class SettingsScreen extends StatelessWidget {
             style: DA.heading(22),
           ),
           content: Text(
-            'Her Health can use your device security, such as '
-            'Face ID, Touch ID, fingerprint or device PIN, '
-            'to help you sign in faster.\n\n'
-            'Her Health never receives or stores your fingerprint, '
-            'face scan or device PIN.',
+            nativeBiometric
+                ? 'Use your enrolled fingerprint or face recognition '
+                    'to unlock Her Health on this device.\n\n'
+                    'Her Health does not receive or store your fingerprint '
+                    'or face scan. Your login session is stored securely '
+                    'on this device.'
+                : 'Use your device passkey to sign in to Her Health.\n\n'
+                    'Her Health does not receive or store your fingerprint, '
+                    'face scan or device PIN.',
             style: DA.body(15),
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Enable'),
             ),
           ],
         ),
       );
 
-      if (confirmed != true) return;
+      if (confirmed != true || !context.mounted) return;
 
-      if (!context.mounted) return;
+      if (nativeBiometric) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Follow the fingerprint or face verification prompt.',
+            ),
+          ),
+        );
+
+        final enabled = await AuthService.enableBiometricUnlock();
+
+        if (!context.mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              enabled
+                  ? 'Biometric device unlock enabled successfully.'
+                  : 'No enrolled biometrics were found, or verification was not completed. Please check your device settings.',
+            ),
+            backgroundColor: enabled ? null : Colors.red.shade400,
+          ),
+        );
+
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Follow your device prompt to enable device unlock.',
+            'Follow your browser or device prompt to register your passkey.',
           ),
         ),
       );
 
-      final options =
-          await AuthService.beginPasskeyRegistration(
+      final options = await AuthService.beginPasskeyRegistration(
         portal: 'patient',
       );
 
-      final credentialJson =
-          await PasskeyService.register(
+      final credentialJson = await PasskeyService.register(
         jsonEncode(options),
       );
 
@@ -135,8 +175,7 @@ class SettingsScreen extends StatelessWidget {
         );
       }
 
-      final credential =
-          Map<String, dynamic>.from(decoded);
+      final credential = Map<String, dynamic>.from(decoded);
 
       await AuthService.finishPasskeyRegistration(
         portal: 'patient',
@@ -148,9 +187,7 @@ class SettingsScreen extends StatelessWidget {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Device unlock enabled successfully.',
-          ),
+          content: Text('Device passkey enabled successfully.'),
         ),
       );
     } on AuthException catch (e) {
@@ -166,10 +203,9 @@ class SettingsScreen extends StatelessWidget {
       if (!context.mounted) return;
 
       final message = e.toString().toLowerCase();
-
-      final cancelled =
-          message.contains('notallowed') ||
-          message.contains('cancel');
+      final cancelled = message.contains('notallowed') ||
+          message.contains('cancel') ||
+          message.contains('usercanceled');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -203,8 +239,7 @@ class SettingsScreen extends StatelessWidget {
           child: FutureBuilder<Map<String, dynamic>>(
             future: AuthService.exportMyData(),
             builder: (context, snapshot) {
-              if (snapshot.connectionState !=
-                  ConnectionState.done) {
+              if (snapshot.connectionState != ConnectionState.done) {
                 return const Center(
                   child: CircularProgressIndicator(
                     color: DA.rose,
@@ -223,12 +258,10 @@ class SettingsScreen extends StatelessWidget {
               }
 
               final pretty =
-                  const JsonEncoder.withIndent('  ')
-                      .convert(snapshot.data);
+                  const JsonEncoder.withIndent('  ').convert(snapshot.data);
 
               return Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
                     'This is everything Her Health holds about you. '
@@ -259,8 +292,7 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
                     style: DA.outline(),
-                    icon:
-                        const Icon(Icons.copy_rounded),
+                    icon: const Icon(Icons.copy_rounded),
                     label: const Text('Copy all'),
                     onPressed: () async {
                       await Clipboard.setData(
@@ -269,8 +301,7 @@ class SettingsScreen extends StatelessWidget {
 
                       if (!context.mounted) return;
 
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(
+                      ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
                             'Copied to clipboard.',
@@ -286,8 +317,7 @@ class SettingsScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () =>
-                Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Close'),
           ),
         ],
@@ -300,8 +330,7 @@ class SettingsScreen extends StatelessWidget {
   ) async {
     final deleted = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) =>
-          const _DeleteAccountDialog(),
+      builder: (dialogContext) => const _DeleteAccountDialog(),
     );
 
     if (deleted != true) return;
@@ -327,8 +356,7 @@ class SettingsScreen extends StatelessWidget {
       backgroundColor: DA.ground,
       body: SafeArea(
         child: ListView(
-          padding:
-              const EdgeInsets.fromLTRB(
+          padding: const EdgeInsets.fromLTRB(
             24,
             16,
             24,
@@ -339,33 +367,26 @@ class SettingsScreen extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: DA.backButton(context),
             ),
-
             const SizedBox(height: 16),
-
             Text(
               'Settings',
               style: DA.heading(30),
             ),
-
             if (name.isNotEmpty) ...[
               const SizedBox(height: 6),
               Text(
                 'Signed in as $name',
-                style:
-                    DA.body(15, color: DA.muted),
+                style: DA.body(15, color: DA.muted),
               ),
             ],
-
             const SizedBox(height: 28),
-
             Container(
               decoration: DA.card(),
               clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 6,
                     ),
@@ -395,21 +416,17 @@ class SettingsScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const HealthProfileScreen(),
+                          builder: (context) => const HealthProfileScreen(),
                         ),
                       );
                     },
                   ),
-
                   const Divider(
                     height: 1,
                     color: DA.divider,
                   ),
-
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 6,
                     ),
@@ -439,21 +456,17 @@ class SettingsScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const BillingScreen(),
+                          builder: (context) => const BillingScreen(),
                         ),
                       );
                     },
                   ),
-
                   const Divider(
                     height: 1,
                     color: DA.divider,
                   ),
-
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 6,
                     ),
@@ -479,18 +492,14 @@ class SettingsScreen extends StatelessWidget {
                       Icons.chevron_right_rounded,
                       color: DA.quiet,
                     ),
-                    onTap: () =>
-                        _enableDeviceUnlock(context),
+                    onTap: () => _enableDeviceUnlock(context),
                   ),
-
                   const Divider(
                     height: 1,
                     color: DA.divider,
                   ),
-
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 6,
                     ),
@@ -506,15 +515,12 @@ class SettingsScreen extends StatelessWidget {
                         weight: FontWeight.w700,
                       ),
                     ),
-                    onTap: () =>
-                        _confirmLogout(context),
+                    onTap: () => _confirmLogout(context),
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 28),
-
             Text(
               'Your data',
               style: DA.heading(
@@ -522,17 +528,14 @@ class SettingsScreen extends StatelessWidget {
                 color: DA.sage,
               ),
             ),
-
             const SizedBox(height: 12),
-
             Container(
               decoration: DA.card(),
               clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 6,
                     ),
@@ -554,18 +557,14 @@ class SettingsScreen extends StatelessWidget {
                         color: DA.quiet,
                       ),
                     ),
-                    onTap: () =>
-                        _showMyData(context),
+                    onTap: () => _showMyData(context),
                   ),
-
                   const Divider(
                     height: 1,
                     color: DA.divider,
                   ),
-
                   ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(
+                    contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 6,
                     ),
@@ -588,8 +587,7 @@ class SettingsScreen extends StatelessWidget {
                         color: DA.quiet,
                       ),
                     ),
-                    onTap: () =>
-                        _deleteAccount(context),
+                    onTap: () => _deleteAccount(context),
                   ),
                 ],
               ),
@@ -603,19 +601,15 @@ class SettingsScreen extends StatelessWidget {
 
 /// Asks for the password before permanently
 /// deleting the account.
-class _DeleteAccountDialog
-    extends StatefulWidget {
+class _DeleteAccountDialog extends StatefulWidget {
   const _DeleteAccountDialog();
 
   @override
-  State<_DeleteAccountDialog> createState() =>
-      _DeleteAccountDialogState();
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
 }
 
-class _DeleteAccountDialogState
-    extends State<_DeleteAccountDialog> {
-  final passwordController =
-      TextEditingController();
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  final passwordController = TextEditingController();
 
   bool _isDeleting = false;
   String? _error;
@@ -629,8 +623,7 @@ class _DeleteAccountDialogState
   Future<void> _delete() async {
     if (passwordController.text.isEmpty) {
       setState(() {
-        _error =
-            'Enter your password to confirm.';
+        _error = 'Enter your password to confirm.';
       });
       return;
     }
@@ -670,8 +663,7 @@ class _DeleteAccountDialogState
         width: 420,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment:
-              CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'This permanently deletes your account, health profile, '
@@ -682,11 +674,8 @@ class _DeleteAccountDialogState
                 height: 1.5,
               ),
             ),
-
             const SizedBox(height: 16),
-
             DA.label('Your password'),
-
             TextField(
               controller: passwordController,
               obscureText: true,
@@ -698,7 +687,6 @@ class _DeleteAccountDialogState
                 }
               },
             ),
-
             if (_error != null) ...[
               const SizedBox(height: 12),
               Text(
@@ -717,23 +705,19 @@ class _DeleteAccountDialogState
         TextButton(
           onPressed: _isDeleting
               ? null
-              : () =>
-                  Navigator.pop(
+              : () => Navigator.pop(
                     context,
                     false,
                   ),
           child: const Text('Cancel'),
         ),
-
         TextButton(
-          onPressed:
-              _isDeleting ? null : _delete,
+          onPressed: _isDeleting ? null : _delete,
           child: _isDeleting
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child:
-                      CircularProgressIndicator(
+                  child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: DA.rejectedInk,
                   ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/api_service.dart';
 import '../theme/design_a.dart';
 import 'login_screen.dart';
@@ -145,9 +146,7 @@ class _BillingScreenState extends State<BillingScreen> {
 
               final mm = dueDate?.month.toString().padLeft(2, '0');
               final dd = dueDate?.day.toString().padLeft(2, '0');
-              final due = dueDate == null
-                  ? null
-                  : '${dueDate!.year}-$mm-$dd';
+              final due = dueDate == null ? null : '${dueDate!.year}-$mm-$dd';
 
               final body = <String, dynamic>{
                 if (bill == null) 'patient_id': patientId,
@@ -248,6 +247,15 @@ class _BillingScreenState extends State<BillingScreen> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        inputFormatters: [
+                          TextInputFormatter.withFunction((oldValue, newValue) {
+                            final validAmount = RegExp(
+                              r'^\d*\.?\d{0,2}$',
+                            ).hasMatch(newValue.text);
+
+                            return validAmount ? newValue : oldValue;
+                          }),
+                        ],
                         style: DA.body(16),
                         decoration: DA.input(hint: '0.00'),
                       ),
@@ -261,10 +269,12 @@ class _BillingScreenState extends State<BillingScreen> {
                                 final picked = await showDatePicker(
                                   context: context,
                                   initialDate: dueDate ?? DateTime.now(),
-                                  firstDate: DateTime.now()
-                                      .subtract(const Duration(days: 365)),
-                                  lastDate: DateTime.now()
-                                      .add(const Duration(days: 3650)),
+                                  firstDate: DateTime.now().subtract(
+                                    const Duration(days: 365),
+                                  ),
+                                  lastDate: DateTime.now().add(
+                                    const Duration(days: 3650),
+                                  ),
                                 );
                                 if (picked != null) {
                                   setDialogState(() => dueDate = picked);
@@ -274,8 +284,8 @@ class _BillingScreenState extends State<BillingScreen> {
                           dueDate == null
                               ? 'Select due date'
                               : '${dueDate!.day.toString().padLeft(2, '0')}/'
-                                  '${dueDate!.month.toString().padLeft(2, '0')}/'
-                                  '${dueDate!.year}',
+                                    '${dueDate!.month.toString().padLeft(2, '0')}/'
+                                    '${dueDate!.year}',
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -292,10 +302,7 @@ class _BillingScreenState extends State<BillingScreen> {
                             value: 'partially_paid',
                             child: Text('Partially paid'),
                           ),
-                          DropdownMenuItem(
-                            value: 'paid',
-                            child: Text('Paid'),
-                          ),
+                          DropdownMenuItem(value: 'paid', child: Text('Paid')),
                         ],
                         onChanged: saving
                             ? null
@@ -318,8 +325,7 @@ class _BillingScreenState extends State<BillingScreen> {
               ),
               actions: [
                 TextButton(
-                  onPressed:
-                      saving ? null : () => Navigator.pop(dialogContext),
+                  onPressed: saving ? null : () => Navigator.pop(dialogContext),
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
@@ -468,10 +474,7 @@ class _BillingScreenState extends State<BillingScreen> {
                       style: DA.heading(21, color: DA.sage),
                     ),
                     if (due != null && due.isNotEmpty)
-                      Text(
-                        'Due: $due',
-                        style: DA.body(13, color: DA.quiet),
-                      ),
+                      Text('Due: $due', style: DA.body(13, color: DA.quiet)),
                   ],
                 ),
               ),

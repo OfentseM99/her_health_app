@@ -189,11 +189,11 @@ CREATE TABLE public.health_journeys (
     patient_id integer NOT NULL,
     journey_type character varying(30) NOT NULL,
     answers jsonb DEFAULT '{}'::jsonb NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT health_journeys_journey_type_check CHECK (((journey_type)::text = ANY ((ARRAY['pregnancy_care'::character varying, 'menstrual_health'::character varying, 'postpartum_recovery'::character varying, 'general_health'::character varying, 'cosmetic_gynecology'::character varying])::text[])))
 );
-
 
 --
 -- Name: health_journeys_id_seq; Type: SEQUENCE; Schema: public; Owner: -
@@ -559,13 +559,6 @@ ALTER TABLE ONLY public.health_journey_entries
     ADD CONSTRAINT health_journey_entries_pkey PRIMARY KEY (id);
 
 
---
--- Name: health_journeys health_journeys_patient_id_key; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.health_journeys
-    ADD CONSTRAINT health_journeys_patient_id_key UNIQUE (patient_id);
-
 
 --
 -- Name: health_journeys health_journeys_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -683,6 +676,21 @@ CREATE INDEX idx_chat_messages_patient_id ON public.chat_messages USING btree (p
 
 CREATE INDEX idx_health_journeys_patient_id ON public.health_journeys USING btree (patient_id);
 
+--
+-- Name: idx_health_journeys_one_active_per_patient; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_health_journeys_one_active_per_patient
+    ON public.health_journeys USING btree (patient_id)
+    WHERE (is_active = true);
+
+
+--
+-- Name: idx_health_journeys_patient_created; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_health_journeys_patient_created
+    ON public.health_journeys USING btree (patient_id, created_at DESC);
 
 --
 -- Name: idx_journey_entries_date; Type: INDEX; Schema: public; Owner: -
